@@ -30,6 +30,11 @@ class LoginActivity : AppCompatActivity() {
             true
         }
 
+        // PARA DEBUG: botão para testar a MainActivity
+        findViewById<Button>(R.id.testButton).setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+        }
+
         val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
         val loginButton = findViewById<Button>(R.id.loginButton)
@@ -93,5 +98,4 @@ class LoginActivity : AppCompatActivity() {
             .putBoolean("isFirstLaunch", true)
             .apply()
     }
-
 }
