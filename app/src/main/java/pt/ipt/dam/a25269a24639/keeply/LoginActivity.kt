@@ -13,6 +13,12 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        //TODO: Fazer página de Boas Vindas
+
+        //TODO: Se o user estiver logged in, ir diretamente para a MainActivity
+
+        //TODO: Dar extract string resources em todos os xml's
+
         // Checka se é a primeira vez que o utilizador abre a aplicação
         val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
         val isFirstLaunch = prefs.getBoolean("isFirstLaunch", true)
@@ -87,6 +93,7 @@ class LoginActivity : AppCompatActivity() {
             .setPositiveButton("Aceitar") { _, _ -> // Nada, user aceitou
             }
             .setNegativeButton("Recusar") { _, _ ->
+                resetFirstLaunch()
                 finish()        // User não aceitou, fechar a aplicação
             }
             .show()
