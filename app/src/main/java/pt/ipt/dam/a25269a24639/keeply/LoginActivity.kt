@@ -41,6 +41,10 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
         }
 
+        findViewById<Button>(R.id.cameraButton).setOnClickListener {
+            startActivity(Intent(this, CameraActivity::class.java))
+        }
+
         val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
         val loginButton = findViewById<Button>(R.id.loginButton)

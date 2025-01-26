@@ -72,4 +72,12 @@
         android:layout_marginTop="16dp"
         android:text="Test Main"
         style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+    <Button
+        android:id="@+id/cameraButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Camera"
+        style="@style/Widget.MaterialComponents.Button.TextButton"/>
 </LinearLayout>
