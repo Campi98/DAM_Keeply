@@ -9,6 +9,7 @@ data class Note(
     val id: Long = 0,
     val title: String,
     val content: String,
+    val photoUri: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val synced: Boolean = false
 )

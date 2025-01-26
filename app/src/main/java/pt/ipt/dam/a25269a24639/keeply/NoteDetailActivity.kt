@@ -1,7 +1,12 @@
 package pt.ipt.dam.a25269a24639.keeply
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +20,24 @@ import pt.ipt.dam.a25269a24639.keeply.data.NoteRepository
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
+
+    private var currentPhotoUri: String? = null
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // receber o URI da foto tirada
+            val photoUri = result.data?.getStringExtra("photo_uri")
+            if (photoUri != null) {
+                currentPhotoUri = photoUri
+                // mostrar a foto na ImageView
+                findViewById<ImageView>(R.id.noteImage).apply {
+                    visibility = View.VISIBLE
+                    setImageURI(Uri.parse(photoUri))
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +55,22 @@ class NoteDetailActivity : AppCompatActivity() {
 
         // Se estivermos a editar uma nota existente, obtemos os dados da nota
         noteId = intent.getLongExtra("note_id", -1)
+        if (noteId != -1L) {
+            lifecycleScope.launch {
+                noteRepository.getNoteById(noteId)?.let { note ->
+                    titleInput.setText(note.title)
+                    contentInput.setText(note.content)
+                    // carregar a foto da nota se existir
+                    note.photoUri?.let { uri ->
+                        currentPhotoUri = uri
+                        findViewById<ImageView>(R.id.noteImage).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(uri))
+                        }
+                    }
+                }
+            }
+        }
         val noteTitle = intent.getStringExtra("note_title") ?: ""
         val noteContent = intent.getStringExtra("note_content") ?: ""
 
@@ -51,6 +90,7 @@ class NoteDetailActivity : AppCompatActivity() {
                         id = if (noteId == -1L) 0 else noteId,
                         title = title,
                         content = content,
+                        photoUri = currentPhotoUri,
                         synced = false
                     )
                     if (noteId == -1L) {
@@ -58,7 +98,8 @@ class NoteDetailActivity : AppCompatActivity() {
                     } else {
                         noteRepository.update(note)
                     }
-                    Toast.makeText(this@NoteDetailActivity, "Nota salva!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@NoteDetailActivity, "Nota salva!", Toast.LENGTH_SHORT)
+                        .show()
                     finish()
                 }
             } else {
@@ -66,13 +107,13 @@ class NoteDetailActivity : AppCompatActivity() {
             }
         }
 
-
         findViewById<FloatingActionButton>(R.id.deleteFab).setOnClickListener {
             if (noteId != -1L) {
                 lifecycleScope.launch {
                     noteRepository.getNoteById(noteId)?.let { note ->
                         noteRepository.delete(note)
-                        Toast.makeText(this@NoteDetailActivity, "Nota apagada!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@NoteDetailActivity, "Nota apagada!", Toast.LENGTH_SHORT)
+                            .show()
                         finish()
                     }
                 }
@@ -83,6 +124,11 @@ class NoteDetailActivity : AppCompatActivity() {
 
         toolbar.setNavigationOnClickListener {
             finish()
+        }
+        // tirar foto
+        findViewById<FloatingActionButton>(R.id.cameraFab).setOnClickListener {
+            val intent = Intent(this, CameraActivity::class.java)
+            cameraLauncher.launch(intent)
         }
     }
 }

@@ -2,6 +2,7 @@ package pt.ipt.dam.a25269a24639.keeply
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -66,7 +67,7 @@ class CameraActivity : AppCompatActivity() {
                     permissionGranted = false
             }
             if (!permissionGranted) {
-                Toast.makeText(this, "Permissions not granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permissões não concedidas", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
                 startCamera()
@@ -139,8 +140,15 @@ class CameraActivity : AppCompatActivity() {
                     val msg = "Photo saved successfully: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+                    
+                    // Retorna o URI da foto capturada
+                    val intent = Intent().apply {
+                        putExtra("photo_uri", output.savedUri.toString())
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
                 }
-
+        
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }

@@ -41,6 +41,7 @@ class NoteAdapter(private var notes: List<Note>) :
                 putExtra("note_id", note.id)
                 putExtra("note_title", note.title)
                 putExtra("note_content", note.content)
+                putExtra("photo_uri", note.photoUri)
             }
             context.startActivity(intent)
         }
