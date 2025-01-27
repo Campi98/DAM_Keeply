@@ -2,6 +2,8 @@ package pt.ipt.dam.a25269a24639.keeply
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +44,12 @@ class MainActivity : AppCompatActivity() {
     
             findViewById<FloatingActionButton>(R.id.addNoteFab).setOnClickListener {
                 startActivity(Intent(this, NoteDetailActivity::class.java))
+            }
+
+            val logoutBtn = findViewById<ImageButton>(R.id.logoutButton)
+            logoutBtn.setOnClickListener {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
             }
     }
 }

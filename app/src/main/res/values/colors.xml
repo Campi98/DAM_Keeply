@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="purple_500">#673AB7</color> <!-- Um roxo padrão -->
+    <color name="purple_700">#512DA8</color> <!-- Um tom mais escuro -->
+
 </resources>
