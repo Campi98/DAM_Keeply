@@ -24,7 +24,7 @@ class RegisterActivity : AppCompatActivity() {
             val password = passwordInput.text.toString()
 
             if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
-                // TODO: implementar lógica de registo
+                // TODO:lógica de registo
                 Toast.makeText(this, "Registo com sucesso!", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
