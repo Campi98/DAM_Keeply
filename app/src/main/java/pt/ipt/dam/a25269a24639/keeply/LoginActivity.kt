@@ -159,7 +159,7 @@ class LoginActivity : AppCompatActivity() {
             val user = userRepository.login(email, password)
             if (user != null) {
                 saveLoginState()
-                Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.email}!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.name}!", Toast.LENGTH_SHORT).show()
                 goToMainActivity()
             } else {
                 Toast.makeText(this@LoginActivity, "Email ou senha inválidos!", Toast.LENGTH_SHORT).show()
