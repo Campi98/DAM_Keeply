@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     
             // TODO: Ver se é necessário usar este lifecycleScope ou se há outra forma
             lifecycleScope.launch {
+                noteRepository.syncNotes()
                 noteRepository.allNotes.collect { notes ->
                     noteAdapter.updateNotes(notes)
                 }

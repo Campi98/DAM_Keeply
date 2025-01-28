@@ -87,7 +87,7 @@ class NoteDetailActivity : AppCompatActivity() {
             if (title.isNotEmpty() && content.isNotEmpty()) {
                 lifecycleScope.launch {
                     val note = Note(
-                        id = if (noteId == -1L) 0 else noteId,
+                        id = noteId,
                         title = title,
                         content = content,
                         photoUri = currentPhotoUri,

@@ -22,4 +22,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE synced = 0")
     fun getUnsyncedNotes(): Flow<List<Note>>
+
+    @Query("SELECT * FROM notes WHERE synced = 0")
+    suspend fun getUnsyncedNotesList(): List<Note>
 }
