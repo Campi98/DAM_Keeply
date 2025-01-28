@@ -17,6 +17,10 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE email LIKE :email LIMIT 1")
     suspend fun findUserByEmail(email: String): User? // Tornar a operação segura ao retornar null caso não encontre
 
+    @Query("SELECT * FROM users WHERE name LIKE :name LIMIT 1")
+    suspend fun findUserByName(name: String): User? // Tornar a operação segura ao retornar null caso não encontre
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE) // Evitar duplicados
     suspend fun insertUser(vararg users: User)
 

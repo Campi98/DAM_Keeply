@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             logoutBtn.setOnClickListener {
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
+                finish()
             }
     }
 }
