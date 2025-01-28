@@ -5,10 +5,18 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
+import pt.ipt.dam.a25269a24639.keeply.data.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.UserRepository
+
 
 class LoginActivity : AppCompatActivity() {
+
+    private lateinit var userRepository: UserRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -50,17 +58,23 @@ class LoginActivity : AppCompatActivity() {
         val loginButton = findViewById<Button>(R.id.loginButton)
         val registerButton = findViewById<Button>(R.id.registerButton)
 
-        loginButton.setOnClickListener {
-            val email = emailInput.text.toString()
-            val password = passwordInput.text.toString()
+        // Inicializa o banco de dados e repositório
+        val database = NoteDatabase.getDatabase(this)
+        userRepository = UserRepository(database.userDao())
 
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                // TODO: implementar lógica de login
-                Toast.makeText(this, "Login com sucesso!", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+        //Verificar o estado de login na inicialização
+        val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
+        if (isLoggedIn) {
+            goToMainActivity()
+        }
+
+        // Lógica do botão de login
+        loginButton.setOnClickListener {
+            val email = emailInput.text.toString().trim()
+            val password = passwordInput.text.toString().trim()
+
+            if (validateFields(email, password)) {
+                login(email, password)
             }
         }
 
@@ -108,5 +122,65 @@ class LoginActivity : AppCompatActivity() {
             .edit()
             .putBoolean("isFirstLaunch", true)
             .apply()
+    }
+
+    /**
+     * Valida os campos de email e senha.
+     * - Exibe mensagens ao usuário se os campos estiverem vazios.
+     *
+     * @param email O email inserido pelo usuário.
+     * @param password A palavra passe inserida pelo usuário.
+     * @return True se os campos forem válidos, False caso contrário.
+     */
+    private fun validateFields(email: String, password: String): Boolean {
+        return when {
+            email.isEmpty() -> {
+                Toast.makeText(this, "Por favor, insira o email.", Toast.LENGTH_SHORT).show()
+                false
+            }
+            password.isEmpty() -> {
+                Toast.makeText(this, "Por favor, insira a senha.", Toast.LENGTH_SHORT).show()
+                false
+            }
+            else -> true
+        }
+    }
+
+    /**
+     * Realiza o login ao verificar as credenciais no banco de dados Room.
+     * - Caso o login seja bem-sucedido, salva o estado de login e redireciona para a MainActivity.
+     * - Caso contrário, exibe uma mensagem de erro.
+     *
+     * @param email O email inserido pelo usuário.
+     * @param password A palavra passe inserida pelo usuário.
+     */
+    private fun login(email: String, password: String) {
+        lifecycleScope.launch {
+            val user = userRepository.login(email, password)
+            if (user != null) {
+                saveLoginState()
+                Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.email}!", Toast.LENGTH_SHORT).show()
+                goToMainActivity()
+            } else {
+                Toast.makeText(this@LoginActivity, "Email ou senha inválidos!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * Salva o estado de login no SharedPreferences.
+     */
+    private fun saveLoginState() {
+        getSharedPreferences("AppPrefs", MODE_PRIVATE).edit()
+            .putBoolean("isLoggedIn", true)
+            .apply()
+    }
+
+    /**
+    * Redireciona o usuário para a MainActivity.
+    */
+    private fun goToMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }

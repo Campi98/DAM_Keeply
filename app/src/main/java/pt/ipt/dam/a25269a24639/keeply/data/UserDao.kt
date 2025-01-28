@@ -6,25 +6,27 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
     @Query("SELECT * FROM users")
-    fun getAllUsers(): List<User>
+    fun getAllUsers(): Flow<List<User>> // Retorna Flow para ser observado
 
     @Query("SELECT * FROM users WHERE userId IN (:userIds)")
-    fun loadAllUsersByIds(userIds: IntArray): List<User>
+    suspend fun loadAllUsersByIds(userIds: IntArray): List<User>
 
     @Query("SELECT * FROM users WHERE userId = :idUser")
     suspend fun getUserById(idUser: Long): User?
 
     @Query("SELECT * FROM users WHERE email LIKE :email LIMIT 1")
-    fun findUserByEmail(email: String): User
+    suspend fun findUserByEmail(email: String): User? // Tornar a operação segura ao retornar null caso não encontre
 
-    @Insert
-    fun insertUser(vararg users: User)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) // Evitar duplicados
+    suspend fun insertUser(vararg users: User)
 
     @Delete
-    fun deleteUser(user: User)
+    suspend fun deleteUser(user: User)
 
     @Update
     suspend fun updateUser(user: User)
 
+    @Query("SELECT * FROM users WHERE email = :email AND password = :password LIMIT 1")
+    suspend fun loginUser(email: String, password: String): User?
 
 }
