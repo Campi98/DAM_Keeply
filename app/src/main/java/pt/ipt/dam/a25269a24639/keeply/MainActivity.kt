@@ -48,7 +48,16 @@ class MainActivity : AppCompatActivity() {
 
             val logoutBtn = findViewById<ImageButton>(R.id.logoutButton)
             logoutBtn.setOnClickListener {
+                // limpar o estado de login no SharedPreferences
+                getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isLoggedIn", false)
+                    .apply()
+                
+                // voltar ao ecrã de login
                 val intent = Intent(this, LoginActivity::class.java)
+                // limpar a stack de activities para não ser possível voltar atrás
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 finish()
             }
