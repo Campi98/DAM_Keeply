@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -32,10 +33,24 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var imageCapture: ImageCapture
     private lateinit var viewFinder: PreviewView
     private lateinit var imageCaptureButton: Button
+    private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
+
+
+        // Botão para trocar entre câmaras frontal e traseira
+        findViewById<ImageButton>(R.id.camera_switch_button).setOnClickListener {
+            lensFacing = if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            } else {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            }
+            // Restart camera with new lens facing
+            startCamera()
+        }
+
 
         // inicializar views
         viewFinder = findViewById(R.id.viewFinder)
@@ -84,24 +99,19 @@ class CameraActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
-            // Set up the preview use case
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-            // Set up the image capture use case
             imageCapture = ImageCapture.Builder().build()
-
-            // Select back camera
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     this,
-                    cameraSelector,
+                    lensFacing, // Use the current lensFacing
                     preview,
                     imageCapture
                 )

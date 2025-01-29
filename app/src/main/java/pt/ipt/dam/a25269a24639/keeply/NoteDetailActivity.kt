@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
@@ -20,6 +21,17 @@ import pt.ipt.dam.a25269a24639.keeply.data.NoteRepository
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
+
+    // Obter uma imagem da galeria
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            currentPhotoUri = it.toString()
+            findViewById<ImageView>(R.id.noteImage).apply {
+                visibility = View.VISIBLE
+                setImageURI(uri)
+            }
+        }
+    }
 
     private var currentPhotoUri: String? = null
     private val cameraLauncher = registerForActivityResult(
@@ -125,10 +137,25 @@ class NoteDetailActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener {
             finish()
         }
+
         // tirar foto
         findViewById<FloatingActionButton>(R.id.cameraFab).setOnClickListener {
-            val intent = Intent(this, CameraActivity::class.java)
-            cameraLauncher.launch(intent)
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Adicionar foto")
+                .setItems(arrayOf("Tirar foto", "Escolher da galeria")) { _, which ->
+                    when (which) {
+                        0 -> {
+                            // isto lança a atividade da câmara
+                            val intent = Intent(this, CameraActivity::class.java)
+                            cameraLauncher.launch(intent)
+                        }
+                        1 -> {
+                            // isto lança a atividade da galeria
+                            pickImage.launch("image/*")
+                        }
+                    }
+                }
+                .show()
         }
     }
 }
