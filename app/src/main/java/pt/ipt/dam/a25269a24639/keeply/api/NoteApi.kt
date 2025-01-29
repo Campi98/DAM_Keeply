@@ -6,8 +6,6 @@ import retrofit2.http.*
 
 interface NoteApi {
 
-    // estas com o NoteDTO estão a funcionar
-
     @GET("api/notes")
     suspend fun getAllNotes(): List<Note>
     

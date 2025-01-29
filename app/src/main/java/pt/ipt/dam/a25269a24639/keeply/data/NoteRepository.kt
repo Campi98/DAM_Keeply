@@ -16,12 +16,30 @@ class NoteRepository(private val noteDao: NoteDao) {
     private val api = retrofit.create(NoteApi::class.java)
 
     suspend fun update(note: Note) {
-        noteDao.updateNote(note.copy(synced = false))
-        syncNotes()
+        try {
+            // primeiro atualizar nota no servidor
+            val noteDTO = NoteDTO(note.title, note.content, note.photoUri)
+            api.updateNote(note.id, noteDTO)
+            //
+            noteDao.updateNote(note.copy(synced = true))
+        } catch (e: Exception) {
+            // se falhar, atualizar localmente como não sincronizada
+            noteDao.updateNote(note.copy(synced = false))
+            Log.e("NoteRepository", "Error updating note on server", e)
+        }
     }
 
     suspend fun delete(note: Note) {
-        noteDao.deleteNote(note)
+        try {
+            // Primeiro, apagar nota no servidor
+            api.deleteNote(note.id)
+            // Depois apagar localmente
+            noteDao.deleteNote(note)
+        } catch (e: Exception) {
+            // TODO: isto faz sentido? apagar localmente e deixar no servidor acaba por não fazer nada, certo? porque ele vai logo buscar a nota de novo
+            noteDao.deleteNote(note)
+            Log.e("NoteRepository", "Error deleting note from server", e)
+        }
     }
 
     suspend fun getNoteById(id: Long): Note? {
@@ -76,9 +94,11 @@ class NoteRepository(private val noteDao: NoteDao) {
             // atualizar a base de dados local com os resultados da junção anterior
             mergedNotes.forEach { note ->
                 try {
-                    // update nota remota se a local for mais recente
                     val localNote = noteDao.getNoteById(note.id)
-                    if (localNote != null && localNote.timestamp > note.timestamp) {
+                    if (localNote == null) {
+                        // criar nota local se não existir
+                        noteDao.insertNote(note.copy(synced = true))
+                    } else if (localNote.timestamp > note.timestamp) {
                         val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.photoUri)
                         api.updateNote(note.id, noteDTO)
                         noteDao.updateNote(localNote.copy(synced = true))
