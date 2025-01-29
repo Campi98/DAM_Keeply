@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class NoteRepository(private val noteDao: NoteDao) {
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.10.210.4:8080/")
+        .baseUrl("https://keeplybackend-production.up.railway.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
