@@ -51,7 +51,7 @@ class RegisterActivity : AppCompatActivity() {
                     }
 
                     val user = User(name = name, email = email, password = password, type = "user")
-                    userRepository.insert(user)
+                    userRepository.register(user)
 
                     Toast.makeText(
                         this@RegisterActivity,

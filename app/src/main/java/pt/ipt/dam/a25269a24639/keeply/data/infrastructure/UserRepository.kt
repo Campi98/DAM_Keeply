@@ -8,7 +8,7 @@ class UserRepository(private val userDao: UserDao) {
     // Observe todos os usuários como Flow
     val allUsers: Flow<List<User>> = userDao.getAllUsers()
 
-    suspend fun insert(user: User) {
+    suspend fun register(user: User) {
         userDao.insertUser(user)
     }
 
