@@ -1,6 +1,6 @@
 package pt.ipt.dam.a25269a24639.keeply.api
 
-import pt.ipt.dam.a25269a24639.keeply.data.Note
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.dto.NoteDTO
 import retrofit2.http.*
 

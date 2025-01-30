@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply
+package pt.ipt.dam.a25269a24639.keeply.activity
 
 import android.Manifest
 import android.content.ContentValues
@@ -20,6 +20,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
+import pt.ipt.dam.a25269a24639.keeply.R
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService

@@ -7,10 +7,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import pt.ipt.dam.a25269a24639.keeply.NoteDetailActivity
+import pt.ipt.dam.a25269a24639.keeply.activity.NoteDetailActivity
 import pt.ipt.dam.a25269a24639.keeply.R
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 
-class NoteAdapter(private var notes: List<Note>) : 
+class NoteAdapter(private var notes: List<Note>) :
     RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     class NoteViewHolder(view: View) : RecyclerView.ViewHolder(view) {

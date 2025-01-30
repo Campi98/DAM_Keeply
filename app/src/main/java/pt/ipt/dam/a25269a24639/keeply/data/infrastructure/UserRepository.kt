@@ -1,6 +1,7 @@
-package pt.ipt.dam.a25269a24639.keeply.data
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
 
 import kotlinx.coroutines.flow.Flow
+import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 
 class UserRepository(private val userDao: UserDao) {
 

@@ -1,8 +1,9 @@
-package pt.ipt.dam.a25269a24639.keeply.data
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
 
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import pt.ipt.dam.a25269a24639.keeply.api.NoteApi
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.dto.NoteDTO
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -1,9 +1,11 @@
-package pt.ipt.dam.a25269a24639.keeply.data
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
+import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 
 @Database(entities = [User::class , Note::class], version = 2)
 abstract class NoteDatabase : RoomDatabase() {

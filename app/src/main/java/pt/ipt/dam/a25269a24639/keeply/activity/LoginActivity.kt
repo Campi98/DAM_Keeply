@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply
+package pt.ipt.dam.a25269a24639.keeply.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +9,9 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import pt.ipt.dam.a25269a24639.keeply.data.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.UserRepository
+import pt.ipt.dam.a25269a24639.keeply.R
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.UserRepository
 
 
 class LoginActivity : AppCompatActivity() {

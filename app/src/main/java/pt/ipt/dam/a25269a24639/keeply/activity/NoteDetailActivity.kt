@@ -1,8 +1,9 @@
-package pt.ipt.dam.a25269a24639.keeply
+package pt.ipt.dam.a25269a24639.keeply.activity
 
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -14,38 +15,80 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import pt.ipt.dam.a25269a24639.keeply.data.Note
-import pt.ipt.dam.a25269a24639.keeply.data.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.R
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
 
+
+    private var currentPhotoUri: String? = null
+    private val validImageUriPattern = Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
+
     // Obter uma imagem da galeria
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            currentPhotoUri = it.toString()
-            findViewById<ImageView>(R.id.noteImage).apply {
-                visibility = View.VISIBLE
-                setImageURI(uri)
+        uri?.let { selectedUri ->
+            try {
+                // criar nome para a imagem com o timestamp
+                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val imageFileName = "KEEPLY_${timestamp}.jpg"
+                val outputFile = File(filesDir, imageFileName)
+
+                // Copiar a imagem da galeria para o armazenamento privado da app
+                contentResolver.openInputStream(selectedUri)?.use { input ->
+                    outputFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+
+                    // Usar o mesmo formato de URI para todas as imagens
+                    currentPhotoUri = "file://${outputFile.absolutePath}"
+                    findViewById<ImageView>(R.id.noteImage).apply {
+                        visibility = View.VISIBLE
+                        setImageURI(Uri.parse(currentPhotoUri))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("NoteDetailActivity", "Error processing gallery image", e)
+                Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private var currentPhotoUri: String? = null
+
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // receber o URI da foto tirada
             val photoUri = result.data?.getStringExtra("photo_uri")
             if (photoUri != null) {
-                currentPhotoUri = photoUri
-                // mostrar a foto na ImageView
-                findViewById<ImageView>(R.id.noteImage).apply {
-                    visibility = View.VISIBLE
-                    setImageURI(Uri.parse(photoUri))
+                try {
+                    // converter o URI content:// para file:// para consistência
+                    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val imageFileName = "KEEPLY_${timestamp}.jpg"
+                    val outputFile = File(filesDir, imageFileName)
+
+                    // copiar a imagem da câmara para o armazenamento privado da app
+                    contentResolver.openInputStream(Uri.parse(photoUri))?.use { input ->
+                        outputFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+
+                        currentPhotoUri = "file://${outputFile.absolutePath}"
+                        findViewById<ImageView>(R.id.noteImage).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(currentPhotoUri))
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("NoteDetailActivity", "Error processing camera image", e)
+                    Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -74,6 +117,10 @@ class NoteDetailActivity : AppCompatActivity() {
                     contentInput.setText(note.content)
                     // carregar a foto da nota se existir
                     note.photoUri?.let { uri ->
+                        // validar o URI para evitar erros
+                        if (!validImageUriPattern.matches(uri)) {
+                            return@let
+                        }
                         currentPhotoUri = uri
                         findViewById<ImageView>(R.id.noteImage).apply {
                             visibility = View.VISIBLE

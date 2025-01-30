@@ -1,24 +1,19 @@
-package pt.ipt.dam.a25269a24639.keeply
+package pt.ipt.dam.a25269a24639.keeply.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
-import pt.ipt.dam.a25269a24639.keeply.data.Note
+import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.data.NoteAdapter
-import pt.ipt.dam.a25269a24639.keeply.data.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
 
 class MainActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository

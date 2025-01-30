@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply.data
+package pt.ipt.dam.a25269a24639.keeply.data.domain
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Long = -1L,
+    // vai ter que ter o userid
     val title: String,
     val content: String,
     val photoUri: String? = null,

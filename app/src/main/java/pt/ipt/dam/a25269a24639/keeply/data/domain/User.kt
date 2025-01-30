@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply.data
+package pt.ipt.dam.a25269a24639.keeply.data.domain
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
