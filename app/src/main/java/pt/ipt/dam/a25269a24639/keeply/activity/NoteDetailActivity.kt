@@ -19,6 +19,7 @@ import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.util.ImageUtils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -28,6 +29,7 @@ class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
 
+    private var currentPhotoBase64: String? = null
 
     private var currentPhotoUri: String? = null
     private val validImageUriPattern = Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
@@ -46,6 +48,7 @@ class NoteDetailActivity : AppCompatActivity() {
                     outputFile.outputStream().use { output ->
                         input.copyTo(output)
                     }
+                    processImage(outputFile)
 
                     // Usar o mesmo formato de URI para todas as imagens
                     currentPhotoUri = "file://${outputFile.absolutePath}"
@@ -80,6 +83,8 @@ class NoteDetailActivity : AppCompatActivity() {
                             input.copyTo(output)
                         }
 
+                        processImage(outputFile)
+
                         currentPhotoUri = "file://${outputFile.absolutePath}"
                         findViewById<ImageView>(R.id.noteImage).apply {
                             visibility = View.VISIBLE
@@ -91,6 +96,37 @@ class NoteDetailActivity : AppCompatActivity() {
                     Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun processImage(file: File) {
+        try {
+            currentPhotoUri = "file://${file.absolutePath}"
+            // Converter a imagem para base64
+            val base64Image = ImageUtils.fileToBase64(file)
+            currentPhotoBase64 = base64Image
+
+            findViewById<ImageView>(R.id.noteImage).apply {
+                visibility = View.VISIBLE
+                setImageURI(Uri.parse(currentPhotoUri))
+            }
+        } catch (e: Exception) {
+            Log.e("NoteDetailActivity", "Error processing image", e)
+            Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadBase64Image(imageView: ImageView, base64String: String?) {
+        if (base64String != null) {
+            try {
+                val bitmap = ImageUtils.base64ToBitmap(base64String)
+                imageView.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                Log.e("NoteDetailActivity", "Error decoding base64 image", e)
+                imageView.setImageDrawable(null)
+            }
+        } else {
+            imageView.setImageDrawable(null)
         }
     }
 
@@ -115,17 +151,39 @@ class NoteDetailActivity : AppCompatActivity() {
                 noteRepository.getNoteById(noteId)?.let { note ->
                     titleInput.setText(note.title)
                     contentInput.setText(note.content)
-                    // carregar a foto da nota se existir
-                    note.photoUri?.let { uri ->
-                        // validar o URI para evitar erros
-                        if (!validImageUriPattern.matches(uri)) {
-                            return@let
+
+                    // obtém a referência para a ImageView
+                    val imageView = findViewById<ImageView>(R.id.noteImage)
+
+                    // tenta carregar a imagem a partir do URI primeiro, depois do base64
+                    if (note.photoUri != null || note.photoBase64 != null) {
+                        imageView.visibility = View.VISIBLE
+
+                        if (note.photoUri != null) {
+                            // vê se o ficheiro existe no caminho do URI
+                            val file = Uri.parse(note.photoUri).path?.let { File(it) }
+                            if (file?.exists() == true) {
+                                try {
+                                    imageView.setImageURI(Uri.parse(note.photoUri))
+                                    currentPhotoUri = note.photoUri
+                                } catch (e: Exception) {
+                                    Log.e("NoteDetailActivity", "Error loading image URI: ${note.photoUri}", e)
+                                    // se falhar, tenta com base64
+                                    loadBase64Image(imageView, note.photoBase64)
+                                    currentPhotoBase64 = note.photoBase64
+                                }
+                            } else {
+                                // se o ficheiro não existir, tenta com base64 ... outra vez?
+                                loadBase64Image(imageView, note.photoBase64)
+                                currentPhotoBase64 = note.photoBase64
+                            }
+                        } else {
+                            // sem Uri, tenta com base64... outra vez? xD
+                            loadBase64Image(imageView, note.photoBase64)
+                            currentPhotoBase64 = note.photoBase64
                         }
-                        currentPhotoUri = uri
-                        findViewById<ImageView>(R.id.noteImage).apply {
-                            visibility = View.VISIBLE
-                            setImageURI(Uri.parse(uri))
-                        }
+                    } else {
+                        imageView.visibility = View.GONE
                     }
                 }
             }
@@ -150,6 +208,7 @@ class NoteDetailActivity : AppCompatActivity() {
                         title = title,
                         content = content,
                         photoUri = currentPhotoUri,
+                        photoBase64 = currentPhotoBase64,
                         synced = false
                     )
                     if (noteId == -1L) {

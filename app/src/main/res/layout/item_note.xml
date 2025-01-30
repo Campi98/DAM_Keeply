@@ -34,6 +34,14 @@
             android:maxLines="3"
             android:ellipsize="end"/>
 
+            <ImageView
+        android:id="@+id/noteImage"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="8dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"/>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

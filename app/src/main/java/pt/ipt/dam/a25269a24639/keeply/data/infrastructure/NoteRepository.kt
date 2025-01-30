@@ -19,7 +19,7 @@ class NoteRepository(private val noteDao: NoteDao) {
     suspend fun update(note: Note) {
         try {
             // primeiro atualizar nota no servidor
-            val noteDTO = NoteDTO(note.title, note.content, note.photoUri)
+            val noteDTO = NoteDTO(note.title, note.content, note.photoUri, note.photoBase64)
             api.updateNote(note.id, noteDTO)
             //
             noteDao.updateNote(note.copy(synced = true))
@@ -61,7 +61,7 @@ class NoteRepository(private val noteDao: NoteDao) {
     val allNotes: Flow<List<Note>> = noteDao.getAllNotes()
 
     suspend fun insert(note: Note) {
-        val noteDTO = NoteDTO(note.title, note.content, note.photoUri)
+        val noteDTO = NoteDTO(note.title, note.content, note.photoUri, note.photoBase64)
         try {
             // Primeiro, criar nota no servidor
             val syncedNote = api.createNote(noteDTO)

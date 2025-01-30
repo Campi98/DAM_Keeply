@@ -11,6 +11,7 @@ data class Note(
     val title: String,
     val content: String,
     val photoUri: String? = null,
+    val photoBase64: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val synced: Boolean = false
 )
