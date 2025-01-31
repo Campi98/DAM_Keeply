@@ -2,6 +2,7 @@ package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 
 @Dao
@@ -33,5 +34,8 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE email = :email AND password = :password LIMIT 1")
     suspend fun loginUser(email: String, password: String): User?
+
+    @Query("SELECT * FROM users WHERE synced = 0")
+    suspend fun getUnsyncedUsersList(): List<User>
 
 }

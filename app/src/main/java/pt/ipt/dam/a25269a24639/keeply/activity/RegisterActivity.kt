@@ -64,7 +64,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         // Botão de cancelar
-        val cancelBtn= findViewById<Button>(R.id.cancelButton)
+        val cancelBtn = findViewById<Button>(R.id.cancelButton)
         cancelBtn.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
