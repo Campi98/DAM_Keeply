@@ -9,8 +9,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.UserRepository
 
 class RegisterActivity : AppCompatActivity() {
@@ -21,7 +21,6 @@ class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
-
         val nameInput = findViewById<TextInputEditText>(R.id.nameInput)
         val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
@@ -38,27 +37,23 @@ class RegisterActivity : AppCompatActivity() {
             val password = passwordInput.text.toString().trim()
 
             if (validateFields(name, email, password)) {
-                // Inserir o usuário no banco de dados
                 lifecycleScope.launch {
-                    val existingUser = userRepository.findUserByEmail(email)
-                    if (existingUser != null) {
+                    try {
+                        // primeiro tenta registar com API
+                        userRepository.register(name, email, password)
                         Toast.makeText(
                             this@RegisterActivity,
-                            "O email já está registado!",
+                            "Usuário registado com sucesso!",
                             Toast.LENGTH_SHORT
                         ).show()
-                        return@launch
+                        finish()
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@RegisterActivity,
+                            "Erro ao registar: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-
-                    val user = User(name = name, email = email, password = password, type = "user")
-                    userRepository.insert(user)
-
-                    Toast.makeText(
-                        this@RegisterActivity,
-                        "Usuário registado com sucesso!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
                 }
             }
         }

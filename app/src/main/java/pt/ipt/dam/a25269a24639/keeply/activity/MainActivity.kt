@@ -2,6 +2,7 @@ package pt.ipt.dam.a25269a24639.keeply.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
+        // ver estado do login no appPrefs
+        val sharedPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        val isLoggedIn = sharedPrefs.getBoolean("isLoggedIn", false)
+
+
+        if (!isLoggedIn) {
+            // não está logged in, redirecionar para o login
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         val database = NoteDatabase.getDatabase(this)
         noteRepository = NoteRepository(database.noteDao())
 
@@ -32,9 +46,15 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: Ver se é necessário usar este lifecycleScope ou se há outra forma
         lifecycleScope.launch {
-            noteRepository.syncNotes()
-            noteRepository.allNotes.collect { notes ->
-                noteAdapter.updateNotes(notes)
+            try {
+                noteRepository.syncNotes()
+                noteRepository.allNotes.collect { notes ->
+                    Log.d("MainActivity", "Received ${notes.size} notes")
+                    noteAdapter.updateNotes(notes)
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error loading notes", e)
+                Toast.makeText(this@MainActivity, "Error loading notes", Toast.LENGTH_SHORT).show()
             }
         }
 
