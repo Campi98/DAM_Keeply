@@ -46,6 +46,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.logging.interceptor)
     
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")

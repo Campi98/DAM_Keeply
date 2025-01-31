@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 import pt.ipt.dam.a25269a24639.keeply.api.UserApi
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 import pt.ipt.dam.a25269a24639.keeply.data.dto.UserDTO
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -12,10 +14,15 @@ import java.io.IOException
 
 class UserRepository(private val userDao: UserDao) {
 
-
-    val retrofit: Retrofit by lazy {
+    private val client by lazy {
+        val logging = HttpLoggingInterceptor()
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+        OkHttpClient.Builder().addInterceptor(logging).build()
+    }
+        val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/")
+            .client(client)
+            .baseUrl("http://192.168.1.7:8080/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -35,7 +42,6 @@ class UserRepository(private val userDao: UserDao) {
         return try {
             // 1. Sincronizar dados antes de autenticar
             syncUsers()
-
             // 2. Autenticar localmente
             val user = userDao.loginUser(email, password)
             if (user != null) {

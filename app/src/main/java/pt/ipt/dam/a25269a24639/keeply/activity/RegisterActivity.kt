@@ -40,19 +40,8 @@ class RegisterActivity : AppCompatActivity() {
             if (validateFields(name, email, password)) {
                 // Inserir o usuário no banco de dados
                 lifecycleScope.launch {
-                    val existingUser = userRepository.findUserByEmail(email)
-                    if (existingUser != null) {
-                        Toast.makeText(
-                            this@RegisterActivity,
-                            "O email já está registado!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@launch
-                    }
-
                     val user = User(name = name, email = email, password = password, type = "user")
                     userRepository.register(user)
-
                     Toast.makeText(
                         this@RegisterActivity,
                         "Usuário registado com sucesso!",
