@@ -2,7 +2,9 @@ package pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note
 
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
+import android.widget.Toast
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import pt.ipt.dam.a25269a24639.keeply.api.NoteApi
 import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.dto.NoteDTO
@@ -51,6 +53,15 @@ class NoteRepository(private val noteDao: NoteDao) {
         return noteDao.getAllNotes(userId)
     }
 
+    suspend fun deleteAllUserNotes(userId: Long) {
+        noteDao.deleteAllUserNotes(userId)
+        try {
+            api.deleteAllUserNotes(userId)
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error deleting all user notes from server", e)
+        }
+    }
+
     suspend fun insert(note: Note) {
         val noteDTO = NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
         try {
@@ -72,10 +83,10 @@ class NoteRepository(private val noteDao: NoteDao) {
             // Vai buscar todas as notas do servidor
             val remoteNotes = api.getAllNotes(userId)
 
-            // Vai buscar todas as notas da base de dados local
+            // Vai buscar todas as notas da base de dados local do user logado
             // Obter TODAS as notas, não apenas as não sincronizadas
             // Isto é porque precisamos de comparar timestamps para determinar qual versão é mais recente
-            val localNotes = noteDao.getAllNotesList()
+            val localNotes = noteDao.getAllNotes(userId).first()
             
             // criar uma lista de notas que são a junção das notas locais e remotas
             val mergedNotes = (remoteNotes + localNotes)
@@ -90,15 +101,17 @@ class NoteRepository(private val noteDao: NoteDao) {
                 try {
                     val localNote = noteDao.getNoteById(note.id)
                     val remoteNote = remoteNotes.find { it.id == note.id }
+
                     if (localNote == null && remoteNote != null) {
-                        // criar nota local se não existir
+                        // inserir nota no local
                         noteDao.insertNote(note.copy(synced = true))
                     }else if (remoteNote == null && localNote != null) {
-                        // inserir no remote
+                        // inserir nota no remote
                         val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
                             localNote.photoUri)
                         api.createNote(noteDTO)
                     } else if (localNote != null && localNote.timestamp > note.timestamp) {
+                        // update nota remota se a local for mais recente
                         val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
                             localNote.photoUri)
                         api.updateNote(note.id, noteDTO)

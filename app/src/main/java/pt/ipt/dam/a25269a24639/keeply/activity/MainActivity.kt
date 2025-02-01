@@ -37,7 +37,8 @@ class MainActivity : AppCompatActivity() {
     private val api = retrofit.create(UserApi::class.java)
 
     private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val network = connectivityManager.activeNetwork ?: return false
             val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
@@ -67,7 +68,8 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = noteAdapter
 
         lifecycleScope.launch {
-            val userIdFromAppPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong()
+            val userIdFromAppPrefs =
+                getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong()
             if (userIdFromAppPrefs == 0L) {
                 Toast.makeText(this@MainActivity, "User not found", Toast.LENGTH_SHORT).show()
                 return@launch
@@ -101,13 +103,18 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 try {
-                    val emailFromPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("email", "")!!
+                    val emailFromPrefs =
+                        getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("email", "")!!
                     val response = api.logout(LogoutRequest(emailFromPrefs))
 
                     if (response.isSuccessful) {
                         clearLocalDataAndRedirectToLogin()
                     } else {
-                        Toast.makeText(this@MainActivity, "Server logout failed, logging out locally", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Server logout failed, logging out locally",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         clearLocalDataAndRedirectToLogin()
                     }
                 } catch (e: Exception) {
@@ -118,23 +125,48 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-
         // este botão serve para sincronizar as notas com o servidor
         val syncButton = findViewById<ImageButton>(R.id.syncButton)
         syncButton.setOnClickListener {
             lifecycleScope.launch {
-                val userIdFromAppPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong()
+                val userIdFromAppPrefs =
+                    getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong()
                 if (userIdFromAppPrefs == 0L) {
-                    Toast.makeText(this@MainActivity, "User not found", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Utilizador não encontrado",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@launch
                 }
 
                 if (isNetworkAvailable()) {
-                    Toast.makeText(this@MainActivity, "Syncing notes...", Toast.LENGTH_SHORT).show()
-                    noteRepository.syncNotes(getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong())
+                    var syncToast: Toast? =
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Sincronizando notas...",
+                            Toast.LENGTH_SHORT
+                        )
+                    syncToast?.show()
+                    noteRepository.syncNotes(
+                        getSharedPreferences(
+                            "AppPrefs",
+                            MODE_PRIVATE
+                        ).getInt("userId", 0).toLong()
+                    )
+                    syncToast?.cancel()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Notas sincronizadas com sucesso",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
                 } else {
-                    Toast.makeText(this@MainActivity, "No internet connection. Working in offline mode.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "No internet connection. Working in offline mode.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 noteRepository.getAllNotes(userIdFromAppPrefs).collect { notes ->
@@ -145,100 +177,99 @@ class MainActivity : AppCompatActivity() {
 
 
         val deleteAllButton = findViewById<ImageButton>(R.id.deleteAllButton)
-            deleteAllButton.setOnClickListener {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Apagar TODAS as notas")
-                    .setMessage("Tens a certeza que queres apagar TODAS as notas? Esta ação não pode ser revertida.")
-                    .setPositiveButton("Apagar") { _, _ ->
-                        lifecycleScope.launch {
-                            val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                                .getInt("userId", 0).toLong()
-                                
-                            if (userId != 0L) {
-                                try {
-                                    // get todas as notas
-                                    noteRepository.getAllNotes(userId).collect { notes ->
-                                        // apaga cada uma
-                                        notes.forEach { note ->  
-                                            noteRepository.delete(note)
-                                        }
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            "Todas as notas foram apagadas",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Error deleting notes: ${e.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+        deleteAllButton.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Apagar TODAS as notas")
+                .setMessage("Tens a certeza que queres apagar TODAS as notas? Esta ação não pode ser revertida.")
+                .setPositiveButton("Apagar") { _, _ ->
+                    lifecycleScope.launch {
+                        val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                            .getInt("userId", 0).toLong()
+
+                        if (userId != 0L) {
+                            try {
+                                noteRepository.deleteAllUserNotes(userId)
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Todas as notas foram apagadas",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Error deleting notes: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
-                    .setNegativeButton("Cancelar", null)
-                    .show()
-            }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
 
         val deleteAccountButton = findViewById<ImageButton>(R.id.deleteAccountButton)
-            deleteAccountButton.setOnClickListener {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Apagar Conta")
-                    .setMessage("Tens a certeza que queres apagar a tua conta? Esta ação não pode ser revertida e todas as tuas notas serão apagadas.")
-                    .setPositiveButton("Apagar") { _, _ ->
-                        lifecycleScope.launch {
-                            try {
-                                val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                                    .getInt("userId", 0)
+        deleteAccountButton.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Apagar Conta")
+                .setMessage("Tens a certeza que queres apagar a tua conta? Esta ação não pode ser revertida e todas as tuas notas serão apagadas.")
+                .setPositiveButton("Apagar") { _, _ ->
+                    lifecycleScope.launch {
+                        try {
+                            val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                .getInt("userId", 0)
 
-                                if (userId != 0) {
-                                    withContext(Dispatchers.IO) {
-                                        // Get notes once
-                                        val notes = noteRepository.getAllNotes(userId.toLong()).first()
-                                        
-                                        // Delete all notes
-                                        notes.forEach { note ->
-                                            noteRepository.delete(note)
-                                        }
+                            if (userId != 0) {
+                                withContext(Dispatchers.IO) {
+                                    // Get notes once
+                                    val notes = noteRepository.getAllNotes(userId.toLong()).first()
 
-                                        // Delete user
-                                        api.deleteUser(userId)
+                                    // Delete all notes
+                                    notes.forEach { note ->
+                                        noteRepository.delete(note)
                                     }
 
-                                    // Clear preferences
-                                    getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                                        .edit()
-                                        .clear()
-                                        .apply()
-
-                                    withContext(Dispatchers.Main) {
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            "Conta apagada com sucesso",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-
-                                        startActivity(Intent(this@MainActivity, LoginActivity::class.java).apply {
-                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        })
-                                        finish()
-                                    }
+                                    // Delete user
+                                    api.deleteUser(userId)
                                 }
-                            } catch (e: Exception) {
+
+                                // Clear preferences
+                                getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                    .edit()
+                                    .clear()
+                                    .apply()
+
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(
                                         this@MainActivity,
-                                        "Erro ao apagar conta: ${e.message}",
+                                        "Conta apagada com sucesso",
                                         Toast.LENGTH_SHORT
                                     ).show()
+
+                                    startActivity(
+                                        Intent(
+                                            this@MainActivity,
+                                            LoginActivity::class.java
+                                        ).apply {
+                                            flags =
+                                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                        })
+                                    finish()
                                 }
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Erro ao apagar conta: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
-                    .setNegativeButton("Cancelar", null)
-                    .show()
-            }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
     }
 }

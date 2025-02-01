@@ -123,7 +123,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
+        val imageCapture = imageCapture
 
         // Create timestamp for unique filename
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)

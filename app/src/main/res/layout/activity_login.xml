@@ -47,25 +47,29 @@
 
     <Button
         android:id="@+id/loginButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Login"/>
 
     <Button
         android:id="@+id/registerButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Registar"/>
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center"
+        android:text="Sem conta? Registe-se aqui!"
+        android:textAllCaps="false"
+        style="@style/Widget.MaterialComponents.Button.TextButton"/>
         <Button
         android:id="@+id/aboutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Sobre"
+        android:layout_marginTop="50dp"
+        android:text="Sobre a App"
+        android:textAllCaps="false"
         style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
-    <Button
+    <!-- <Button
         android:id="@+id/testButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -79,5 +83,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Camera"
-        style="@style/Widget.MaterialComponents.Button.TextButton"/>
+        style="@style/Widget.MaterialComponents.Button.TextButton"/> -->
 </LinearLayout>

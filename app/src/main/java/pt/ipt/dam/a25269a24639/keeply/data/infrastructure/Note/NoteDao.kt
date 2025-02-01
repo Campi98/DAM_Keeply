@@ -29,4 +29,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE synced = 0")
     suspend fun getUnsyncedNotesList(): List<Note>
+
+    @Query("DELETE FROM notes WHERE userId = :userId")
+    suspend fun deleteAllUserNotes(userId: Long)
 }

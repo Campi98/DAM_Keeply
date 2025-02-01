@@ -69,14 +69,14 @@ class LoginActivity : AppCompatActivity() {
             true
         }
 
-        // PARA DEBUG: botão para testar a MainActivity
-        findViewById<Button>(R.id.testButton).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-        }
-
-        findViewById<Button>(R.id.cameraButton).setOnClickListener {
-            startActivity(Intent(this, CameraActivity::class.java))
-        }
+//        // PARA DEBUG: botão para testar a MainActivity
+//        findViewById<Button>(R.id.testButton).setOnClickListener {
+//            startActivity(Intent(this, MainActivity::class.java))
+//        }
+//
+//        findViewById<Button>(R.id.cameraButton).setOnClickListener {
+//            startActivity(Intent(this, CameraActivity::class.java))
+//        }
 
         /* val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput) */

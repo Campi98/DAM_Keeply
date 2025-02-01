@@ -17,4 +17,7 @@ interface NoteApi {
     
     @DELETE("api/notes/{id}")
     suspend fun deleteNote(@Path("id") id: Long)
+
+    @DELETE("api/notes")
+    suspend fun deleteAllUserNotes(@Query("userId") userId: Long)
 }
