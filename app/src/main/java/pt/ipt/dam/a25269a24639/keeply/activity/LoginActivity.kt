@@ -114,6 +114,33 @@ class LoginActivity : AppCompatActivity() {
         aboutButton.setOnClickListener {
             showAboutDialog()
         }
+        findViewById<Button>(R.id.librariesButton).setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Bibliotecas Utilizadas")
+                .setMessage("""
+                Core Libraries:
+                • AndroidX Core
+                • AndroidX AppCompat 
+                • AndroidX Activity
+                • AndroidX ConstraintLayout
+
+                UI Components:
+                • Material Design Components
+                • RecyclerView
+                • CardView 
+
+                Database:
+                • Room Persistence Library (v2.6.1)
+
+                Camera:
+                • CameraX (v1.3.2)
+
+                Networking:
+                • Retrofit 2 (v2.9.0)
+            """.trimIndent())
+                .setPositiveButton("OK", null)
+                .show()
+        }
     }
 
     private fun showAboutDialog() {
@@ -144,6 +171,7 @@ class LoginActivity : AppCompatActivity() {
             }
             .show()
     }
+
 
     private fun resetFirstLaunch() {
         getSharedPreferences("AppPrefs", MODE_PRIVATE)

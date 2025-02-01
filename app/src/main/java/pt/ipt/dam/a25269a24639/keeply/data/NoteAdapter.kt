@@ -105,16 +105,15 @@ class NoteAdapter(private var notes: List<Note>) :
             context.startActivity(intent)
         }
 
-        val timestamp = note.timestamp
-        val dateTime = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(timestamp),
-            ZoneId.systemDefault()
-        )
+        val instant = Instant.ofEpochMilli(note.timestamp)
+        val dateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-        val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada:"
-        holder.itemView.findViewById<TextView>(R.id.noteTimestamp).text =
-            "$timestampLabel${dateTime.format(formatter)}"
-            }
+        val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada: "
+
+        holder.itemView.findViewById<TextView>(R.id.noteTimestamp).apply {
+            text = "$timestampLabel${dateTime.format(formatter)}"
+        }
+    }
 
     override fun getItemCount() = notes.size
 }

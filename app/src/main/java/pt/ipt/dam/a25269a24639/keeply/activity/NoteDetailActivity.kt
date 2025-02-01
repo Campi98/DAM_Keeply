@@ -185,14 +185,14 @@ class NoteDetailActivity : AppCompatActivity() {
                 noteRepository.getNoteById(noteId)?.let { note ->
                     titleInput.setText(note.title)
                     contentInput.setText(note.content)
-                    val dateTime = LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(note.timestamp),
-                        ZoneId.systemDefault()
-                    )
+                    val instant = Instant.ofEpochMilli(note.timestamp)
+                    val dateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
                     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
                     val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada: "
-                    findViewById<TextView>(R.id.noteTimestamp).text =
-                        "$timestampLabel${dateTime.format(formatter)}"
+
+                    findViewById<TextView>(R.id.noteTimestamp).apply {
+                        text = "$timestampLabel${dateTime.format(formatter)}"
+                    }
 
                     // obtém a referência para a ImageView
                     val imageView = findViewById<ImageView>(R.id.noteImage)
