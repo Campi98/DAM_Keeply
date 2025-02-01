@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.api.LogoutRequest
 import pt.ipt.dam.a25269a24639.keeply.api.UserApi
@@ -169,6 +172,65 @@ class MainActivity : AppCompatActivity() {
                                     Toast.makeText(
                                         this@MainActivity,
                                         "Error deleting notes: ${e.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+
+        val deleteAccountButton = findViewById<ImageButton>(R.id.deleteAccountButton)
+            deleteAccountButton.setOnClickListener {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Apagar Conta")
+                    .setMessage("Tens a certeza que queres apagar a tua conta? Esta ação não pode ser revertida e todas as tuas notas serão apagadas.")
+                    .setPositiveButton("Apagar") { _, _ ->
+                        lifecycleScope.launch {
+                            try {
+                                val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                    .getInt("userId", 0)
+
+                                if (userId != 0) {
+                                    withContext(Dispatchers.IO) {
+                                        // Get notes once
+                                        val notes = noteRepository.getAllNotes(userId.toLong()).first()
+                                        
+                                        // Delete all notes
+                                        notes.forEach { note ->
+                                            noteRepository.delete(note)
+                                        }
+
+                                        // Delete user
+                                        api.deleteUser(userId)
+                                    }
+
+                                    // Clear preferences
+                                    getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                        .edit()
+                                        .clear()
+                                        .apply()
+
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            "Conta apagada com sucesso",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        startActivity(Intent(this@MainActivity, LoginActivity::class.java).apply {
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                        })
+                                        finish()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "Erro ao apagar conta: ${e.message}",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }

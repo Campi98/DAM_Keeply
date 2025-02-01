@@ -119,7 +119,7 @@ class LoginActivity : AppCompatActivity() {
     private fun showAboutDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Sobre o Keeply")
-            .setMessage("Keeply é uma aplicação simples e prática para tirar notas.\n\nVersão 1.0   © 2025 \n\nJoão Campos nº 25269 \nCristiane Mayabanza nº 24639")
+            .setMessage("Keeply é uma aplicação simples e prática para tirar notas.\n\nVersão 1.0   © 2025 \n\nJoão Campos nº 25269 \nCristiane Mayabanza nº 24639\n\nLicenciatura em Engenharia Informática\nDesenvolvimento de Aplicações Móveis")
             .setPositiveButton("OK", null)
             .show()
     }
@@ -131,7 +131,7 @@ class LoginActivity : AppCompatActivity() {
                 "Bem-vindo ao Keeply!\n\n" +
                         "Ao utilizar esta aplicação, concorda com:\n\n" +
                         "• Armazenamento local das suas notas\n" +
-                        "• Armazenamento seguro das suas credenciais\n" +
+                        "• Armazenamento \"seguro\" das suas credenciais\n" +
                         "• Utilização de dados apenas para funcionamento da app\n\n" +
                         "Não partilhamos os seus dados com terceiros."
             )
