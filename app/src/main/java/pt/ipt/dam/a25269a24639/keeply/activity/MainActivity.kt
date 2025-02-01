@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
@@ -138,5 +139,44 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
+        val deleteAllButton = findViewById<ImageButton>(R.id.deleteAllButton)
+            deleteAllButton.setOnClickListener {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Apagar TODAS as notas")
+                    .setMessage("Tens a certeza que queres apagar TODAS as notas? Esta ação não pode ser revertida.")
+                    .setPositiveButton("Apagar") { _, _ ->
+                        lifecycleScope.launch {
+                            val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                .getInt("userId", 0).toLong()
+                                
+                            if (userId != 0L) {
+                                try {
+                                    // get todas as notas
+                                    noteRepository.getAllNotes(userId).collect { notes ->
+                                        // apaga cada uma
+                                        notes.forEach { note ->  
+                                            noteRepository.delete(note)
+                                        }
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            "Todas as notas foram apagadas",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "Error deleting notes: ${e.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
     }
 }
