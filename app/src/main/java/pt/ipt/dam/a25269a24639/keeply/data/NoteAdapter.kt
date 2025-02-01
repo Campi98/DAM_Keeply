@@ -2,12 +2,14 @@ package pt.ipt.dam.a25269a24639.keeply.data
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import pt.ipt.dam.a25269a24639.keeply.activity.NoteDetailActivity
@@ -15,6 +17,10 @@ import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.util.ImageUtils
 import java.io.File
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class NoteAdapter(private var notes: List<Note>) :
     RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
@@ -52,6 +58,7 @@ class NoteAdapter(private var notes: List<Note>) :
         return NoteViewHolder(view)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = notes[position]
         holder.titleView.text = note.title
@@ -86,7 +93,7 @@ class NoteAdapter(private var notes: List<Note>) :
         }
 
 
-        
+
         holder.cardView.setOnClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, NoteDetailActivity::class.java).apply {
@@ -97,7 +104,17 @@ class NoteAdapter(private var notes: List<Note>) :
             }
             context.startActivity(intent)
         }
-    }
+
+        val timestamp = note.timestamp
+        val dateTime = LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(timestamp),
+            ZoneId.systemDefault()
+        )
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+        val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada:"
+        holder.itemView.findViewById<TextView>(R.id.noteTimestamp).text =
+            "$timestampLabel${dateTime.format(formatter)}"
+            }
 
     override fun getItemCount() = notes.size
 }

@@ -3,12 +3,15 @@ package pt.ipt.dam.a25269a24639.keeply.activity
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +26,10 @@ import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteRepository
 import pt.ipt.dam.a25269a24639.keeply.util.ImageUtils
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -44,37 +51,40 @@ class NoteDetailActivity : AppCompatActivity() {
     }
 
     private var currentPhotoUri: String? = null
-    private val validImageUriPattern = Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
+    private val validImageUriPattern =
+        Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
 
     // Obter uma imagem da galeria
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            try {
-                // criar nome para a imagem com o timestamp
-                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-                val imageFileName = "KEEPLY_${timestamp}.jpg"
-                val outputFile = File(filesDir, imageFileName)
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                try {
+                    // criar nome para a imagem com o timestamp
+                    val timestamp =
+                        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val imageFileName = "KEEPLY_${timestamp}.jpg"
+                    val outputFile = File(filesDir, imageFileName)
 
-                // Copiar a imagem da galeria para o armazenamento privado da app
-                contentResolver.openInputStream(selectedUri)?.use { input ->
-                    outputFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
-                    processImage(outputFile)
+                    // Copiar a imagem da galeria para o armazenamento privado da app
+                    contentResolver.openInputStream(selectedUri)?.use { input ->
+                        outputFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                        processImage(outputFile)
 
-                    // Usar o mesmo formato de URI para todas as imagens
-                    currentPhotoUri = "file://${outputFile.absolutePath}"
-                    findViewById<ImageView>(R.id.noteImage).apply {
-                        visibility = View.VISIBLE
-                        setImageURI(Uri.parse(currentPhotoUri))
+                        // Usar o mesmo formato de URI para todas as imagens
+                        currentPhotoUri = "file://${outputFile.absolutePath}"
+                        findViewById<ImageView>(R.id.noteImage).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(currentPhotoUri))
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e("NoteDetailActivity", "Error processing gallery image", e)
+                    Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Log.e("NoteDetailActivity", "Error processing gallery image", e)
-                Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
 
     private val cameraLauncher = registerForActivityResult(
@@ -85,7 +95,8 @@ class NoteDetailActivity : AppCompatActivity() {
             if (photoUri != null) {
                 try {
                     // converter o URI content:// para file:// para consistência
-                    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val timestamp =
+                        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                     val imageFileName = "KEEPLY_${timestamp}.jpg"
                     val outputFile = File(filesDir, imageFileName)
 
@@ -142,6 +153,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note_detail)
@@ -173,6 +185,14 @@ class NoteDetailActivity : AppCompatActivity() {
                 noteRepository.getNoteById(noteId)?.let { note ->
                     titleInput.setText(note.title)
                     contentInput.setText(note.content)
+                    val dateTime = LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(note.timestamp),
+                        ZoneId.systemDefault()
+                    )
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                    val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada: "
+                    findViewById<TextView>(R.id.noteTimestamp).text =
+                        "$timestampLabel${dateTime.format(formatter)}"
 
                     // obtém a referência para a ImageView
                     val imageView = findViewById<ImageView>(R.id.noteImage)
@@ -189,7 +209,11 @@ class NoteDetailActivity : AppCompatActivity() {
                                     imageView.setImageURI(Uri.parse(note.photoUri))
                                     currentPhotoUri = note.photoUri
                                 } catch (e: Exception) {
-                                    Log.e("NoteDetailActivity", "Error loading image URI: ${note.photoUri}", e)
+                                    Log.e(
+                                        "NoteDetailActivity",
+                                        "Error loading image URI: ${note.photoUri}",
+                                        e
+                                    )
                                     // se falhar, tenta com base64
                                     loadBase64Image(imageView, note.photoBase64)
                                     currentPhotoBase64 = note.photoBase64
@@ -227,7 +251,10 @@ class NoteDetailActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val note = Note(
                         id = noteId,
-                        userId = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", -1),
+                        userId = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt(
+                            "userId",
+                            -1
+                        ),
                         title = title,
                         content = content,
                         photoUri = currentPhotoUri,
@@ -278,6 +305,7 @@ class NoteDetailActivity : AppCompatActivity() {
                             val intent = Intent(this, CameraActivity::class.java)
                             cameraLauncher.launch(intent)
                         }
+
                         1 -> {
                             // isto lança a atividade da galeria
                             pickImage.launch("image/*")
