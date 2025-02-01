@@ -1,9 +1,11 @@
 package pt.ipt.dam.a25269a24639.keeply.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -11,7 +13,6 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.api.LoginRequest
-import pt.ipt.dam.a25269a24639.keeply.api.NoteApi
 import pt.ipt.dam.a25269a24639.keeply.api.UserApi
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
@@ -28,14 +29,27 @@ class LoginActivity : AppCompatActivity() {
         .build()
     private val api = retrofit.create(UserApi::class.java)
 
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var passwordInput: TextInputEditText
+
+    private val registerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.let { data ->
+                val email = data.getStringExtra("email") ?: ""
+                val password = data.getStringExtra("password") ?: ""
+                emailInput.setText(email)
+                passwordInput.setText(password)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         //TODO: Fazer página de Boas Vindas
-
-        //TODO: Se o user estiver logged in, ir diretamente para a MainActivity
-
         //TODO: Dar extract string resources em todos os xml's
 
         // Checka se é a primeira vez que o utilizador abre a aplicação
@@ -64,8 +78,10 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, CameraActivity::class.java))
         }
 
-        val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
-        val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
+        /* val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
+        val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput) */
+        emailInput = findViewById(R.id.emailInput)
+        passwordInput = findViewById(R.id.passwordInput)
         val loginButton = findViewById<Button>(R.id.loginButton)
         val registerButton = findViewById<Button>(R.id.registerButton)
 
@@ -89,8 +105,9 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        registerButton.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+        findViewById<Button>(R.id.registerButton).setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            registerLauncher.launch(intent)
         }
 
         val aboutButton = findViewById<Button>(R.id.aboutButton)

@@ -66,6 +66,11 @@ class RegisterActivity : AppCompatActivity() {
                             "User registered successfully!",
                             Toast.LENGTH_SHORT
                         ).show()
+                        // enviar email e password para a LoginActivity
+                        val intent = Intent()
+                        intent.putExtra("email", email)
+                        intent.putExtra("password", password)
+                        setResult(RESULT_OK, intent)
                         finish()
                     } catch (e: Exception) {
                         Toast.makeText(
