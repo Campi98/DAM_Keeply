@@ -9,13 +9,21 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
+import pt.ipt.dam.a25269a24639.keeply.api.UserApi
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var userRepository: UserRepository
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://keeplybackend-production.up.railway.app/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+    private val api = retrofit.create(UserApi::class.java)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +34,7 @@ class RegisterActivity : AppCompatActivity() {
         val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
         val registerButton = findViewById<Button>(R.id.registerButton)
+
 
         // Inicializa o banco de dados e repositório
         val database = NoteDatabase.getDatabase(this)
@@ -38,27 +47,33 @@ class RegisterActivity : AppCompatActivity() {
             val password = passwordInput.text.toString().trim()
 
             if (validateFields(name, email, password)) {
-                // Inserir o usuário no banco de dados
                 lifecycleScope.launch {
-                    val existingUser = userRepository.findUserByEmail(email)
-                    if (existingUser != null) {
+                    try {
+                        val user = User(name = name, email = email, password = password)
+                        val response = api.createUser(user)
+
+                        if (!response.isSuccessful) {
+                            Toast.makeText(
+                                this@RegisterActivity,
+                                "Registration failed: Email already in use.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@launch
+                        }
+
                         Toast.makeText(
                             this@RegisterActivity,
-                            "O email já está registado!",
+                            "User registered successfully!",
                             Toast.LENGTH_SHORT
                         ).show()
-                        return@launch
+                        finish()
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@RegisterActivity,
+                            "Registration failed: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-
-                    val user = User(name = name, email = email, password = password)
-                    userRepository.insert(user)
-
-                    Toast.makeText(
-                        this@RegisterActivity,
-                        "Usuário registado com sucesso!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
                 }
             }
         }

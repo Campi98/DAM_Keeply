@@ -25,4 +25,8 @@ interface UserApi {
 
     @POST("api/users/logout")
     suspend fun logout(@Body logoutRequest: LogoutRequest): Response<User>
+
+    //delete user
+    @DELETE("api/users/{id}")
+    suspend fun deleteUser(@Path("id") id: Int)
 }

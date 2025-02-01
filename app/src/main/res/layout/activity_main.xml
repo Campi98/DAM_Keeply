@@ -20,7 +20,7 @@
             app:titleTextColor="@android:color/white">
 
             <!-- Botão de Logout -->
-            <ImageButton
+             <ImageButton
                 android:id="@+id/logoutButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
@@ -29,6 +29,16 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/logout"
                 android:src="@android:drawable/ic_lock_power_off"
+                app:tint="@android:color/white" />
+            <ImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Settings"
+                android:src="@android:drawable/ic_menu_manage"
                 app:tint="@android:color/white" />
 
             <!-- Sync Button -->
@@ -42,6 +52,8 @@
                 android:contentDescription="Sync notes"
                 android:src="@android:drawable/ic_popup_sync"
                 app:tint="@android:color/white" />
+
+                
 
         </androidx.appcompat.widget.Toolbar>
 
