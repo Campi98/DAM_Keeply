@@ -1,5 +1,6 @@
 package pt.ipt.dam.a25269a24639.keeply.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -30,6 +31,17 @@ class NoteDetailActivity : AppCompatActivity() {
     private var noteId: Long = -1
 
     private var currentPhotoBase64: String? = null
+
+    private val fullscreenImageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // User confirmou que quer apagar a imagem
+            currentPhotoUri = null
+            currentPhotoBase64 = null
+            findViewById<ImageView>(R.id.noteImage).visibility = View.GONE
+        }
+    }
 
     private var currentPhotoUri: String? = null
     private val validImageUriPattern = Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
@@ -143,6 +155,16 @@ class NoteDetailActivity : AppCompatActivity() {
 
         val titleInput = findViewById<TextInputEditText>(R.id.titleInput)
         val contentInput = findViewById<TextInputEditText>(R.id.contentInput)
+
+        findViewById<ImageView>(R.id.noteImage).setOnClickListener {
+            if (currentPhotoUri != null || currentPhotoBase64 != null) {
+                val intent = Intent(this, FullscreenImageActivity::class.java).apply {
+                    putExtra("photo_uri", currentPhotoUri)
+                    putExtra("photo_base64", currentPhotoBase64)
+                }
+                fullscreenImageLauncher.launch(intent)
+            }
+        }
 
         // Se estivermos a editar uma nota existente, obtemos os dados da nota
         noteId = intent.getLongExtra("note_id", -1)
