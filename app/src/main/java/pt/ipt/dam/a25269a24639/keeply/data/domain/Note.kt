@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Long = -1L,
-    // vai ter que ter o userid
+    val userId: Int,
     val title: String,
     val content: String,
     val photoUri: String? = null,

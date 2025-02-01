@@ -17,8 +17,8 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteRepository
 import pt.ipt.dam.a25269a24639.keeply.util.ImageUtils
 import java.io.File
 import java.text.SimpleDateFormat
@@ -205,6 +205,7 @@ class NoteDetailActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val note = Note(
                         id = noteId,
+                        userId = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", -1),
                         title = title,
                         content = content,
                         photoUri = currentPhotoUri,

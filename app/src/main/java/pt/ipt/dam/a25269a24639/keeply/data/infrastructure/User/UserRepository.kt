@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User
 
 import kotlinx.coroutines.flow.Flow
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User

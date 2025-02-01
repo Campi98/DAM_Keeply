@@ -10,13 +10,23 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.UserRepository
+import pt.ipt.dam.a25269a24639.keeply.api.LoginRequest
+import pt.ipt.dam.a25269a24639.keeply.api.NoteApi
+import pt.ipt.dam.a25269a24639.keeply.api.UserApi
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var userRepository: UserRepository
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://keeplybackend-production.up.railway.app/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+    private val api = retrofit.create(UserApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,9 +167,10 @@ class LoginActivity : AppCompatActivity() {
      */
     private fun login(email: String, password: String) {
         lifecycleScope.launch {
-            val user = userRepository.login(email, password)
-            if (user != null) {
-                saveLoginState()
+            val response = api.login(LoginRequest(email, password))
+            if (response.isSuccessful) {
+                val user = response.body()!!
+                saveLoginState(user.loggedIn, email, user.userId)
                 Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.name}!", Toast.LENGTH_SHORT).show()
                 goToMainActivity()
             } else {
@@ -171,9 +182,11 @@ class LoginActivity : AppCompatActivity() {
     /**
      * Salva o estado de login no SharedPreferences.
      */
-    private fun saveLoginState() {
+    private fun saveLoginState(isLoggedIn: Boolean, email: String, userId: Int) {
         getSharedPreferences("AppPrefs", MODE_PRIVATE).edit()
-            .putBoolean("isLoggedIn", true)
+            .putBoolean("isLoggedIn", isLoggedIn)
+            .putString("email", email)
+            .putInt("userId", userId)
             .apply()
     }
 

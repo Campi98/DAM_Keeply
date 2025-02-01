@@ -1,4 +1,4 @@
-package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
@@ -6,8 +6,8 @@ import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM notes ORDER BY timestamp DESC")
-    fun getAllNotes(): Flow<List<Note>>
+    @Query("SELECT * FROM notes WHERE userId = :userId ORDER BY timestamp DESC")
+    fun getAllNotes(userId: Long): Flow<List<Note>>
 
     @Query("SELECT * FROM notes")
     suspend fun getAllNotesList(): List<Note>

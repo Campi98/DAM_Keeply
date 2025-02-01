@@ -1,5 +1,6 @@
-package pt.ipt.dam.a25269a24639.keeply.data.infrastructure
+package pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note
 
+import android.content.Context.MODE_PRIVATE
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import pt.ipt.dam.a25269a24639.keeply.api.NoteApi
@@ -19,7 +20,7 @@ class NoteRepository(private val noteDao: NoteDao) {
     suspend fun update(note: Note) {
         try {
             // primeiro atualizar nota no servidor
-            val noteDTO = NoteDTO(note.title, note.content, note.photoUri, note.photoBase64)
+            val noteDTO = NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
             api.updateNote(note.id, noteDTO)
             //
             noteDao.updateNote(note.copy(synced = true))
@@ -37,7 +38,6 @@ class NoteRepository(private val noteDao: NoteDao) {
             // Depois apagar localmente
             noteDao.deleteNote(note)
         } catch (e: Exception) {
-            // TODO: isto faz sentido? apagar localmente e deixar no servidor acaba por não fazer nada, certo? porque ele vai logo buscar a nota de novo
             noteDao.deleteNote(note)
             Log.e("NoteRepository", "Error deleting note from server", e)
         }
@@ -47,21 +47,12 @@ class NoteRepository(private val noteDao: NoteDao) {
         return noteDao.getNoteById(id)
     }
 
-
-    // dar fix ao get (sync notes)
-    // user api em vez do dao
-
-
-    // TODO - EDITAR NOTA COMO O QUE FIZ AGORA
-    // GARANTIR QUE O NOTEDTO PARA O UPDATE JÁ TEM O ID
-
-    //TODO:
-
-    // isto vai buscar todas as notas
-    val allNotes: Flow<List<Note>> = noteDao.getAllNotes()
+   suspend fun getAllNotes(userId: Long): Flow<List<Note>> {
+        return noteDao.getAllNotes(userId)
+    }
 
     suspend fun insert(note: Note) {
-        val noteDTO = NoteDTO(note.title, note.content, note.photoUri, note.photoBase64)
+        val noteDTO = NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
         try {
             // Primeiro, criar nota no servidor
             val syncedNote = api.createNote(noteDTO)
@@ -74,10 +65,12 @@ class NoteRepository(private val noteDao: NoteDao) {
         }
     }
     
-    suspend fun syncNotes() {
+    suspend fun syncNotes(userId: Long) {
         try {
+            //TODO: checkar se há internet, se não, não deixar dar sync - mostrar erro
+
             // Vai buscar todas as notas do servidor
-            val remoteNotes = api.getAllNotes()
+            val remoteNotes = api.getAllNotes(userId)
 
             // Vai buscar todas as notas da base de dados local
             // Obter TODAS as notas, não apenas as não sincronizadas
@@ -96,11 +89,18 @@ class NoteRepository(private val noteDao: NoteDao) {
             mergedNotes.forEach { note ->
                 try {
                     val localNote = noteDao.getNoteById(note.id)
-                    if (localNote == null) {
+                    val remoteNote = remoteNotes.find { it.id == note.id }
+                    if (localNote == null && remoteNote != null) {
                         // criar nota local se não existir
                         noteDao.insertNote(note.copy(synced = true))
-                    } else if (localNote.timestamp > note.timestamp) {
-                        val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.photoUri)
+                    }else if (remoteNote == null && localNote != null) {
+                        // inserir no remote
+                        val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
+                            localNote.photoUri)
+                        api.createNote(noteDTO)
+                    } else if (localNote != null && localNote.timestamp > note.timestamp) {
+                        val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
+                            localNote.photoUri)
                         api.updateNote(note.id, noteDTO)
                         noteDao.updateNote(localNote.copy(synced = true))
                     } else {

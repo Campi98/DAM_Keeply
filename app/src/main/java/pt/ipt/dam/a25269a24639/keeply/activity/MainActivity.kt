@@ -11,12 +11,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
+import pt.ipt.dam.a25269a24639.keeply.api.LogoutRequest
+import pt.ipt.dam.a25269a24639.keeply.api.UserApi
 import pt.ipt.dam.a25269a24639.keeply.data.NoteAdapter
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteRepository
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://keeplybackend-production.up.railway.app/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val api = retrofit.create(UserApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +42,13 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: Ver se é necessário usar este lifecycleScope ou se há outra forma
         lifecycleScope.launch {
-            noteRepository.syncNotes()
-            noteRepository.allNotes.collect { notes ->
+            val userIdFromAppPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong()
+            if (userIdFromAppPrefs == 0L) {
+                Toast.makeText(this@MainActivity, "User not found", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            noteRepository.syncNotes(userIdFromAppPrefs)
+            noteRepository.getAllNotes(userIdFromAppPrefs).collect { notes ->
                 noteAdapter.updateNotes(notes)
             }
         }
@@ -44,18 +59,32 @@ class MainActivity : AppCompatActivity() {
 
         val logoutBtn = findViewById<ImageButton>(R.id.logoutButton)
         logoutBtn.setOnClickListener {
-            // limpar o estado de login no SharedPreferences
-            getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("isLoggedIn", false)
-                .apply()
+            lifecycleScope.launch {
+                val emailFromPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("email", "")!!
+                val response = api.logout(LogoutRequest(emailFromPrefs))
 
-            // voltar ao ecrã de login
-            val intent = Intent(this, LoginActivity::class.java)
-            // limpar a stack de activities para não ser possível voltar atrás
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+                if (response.isSuccessful == false) {
+                    Toast.makeText(this@MainActivity, "Logout failed", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val loggedOutUser = response.body()!!
+
+                // limpar o estado de login no SharedPreferences
+                getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isLoggedIn", loggedOutUser.loggedIn)
+                    .remove("email")
+                    .remove("userId")
+                    .apply()
+
+                // voltar ao ecrã de login
+                val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                // limpar a stack de activities para não ser possível voltar atrás
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
         }
 
         // este botão serve para sincronizar as notas com o servidor
@@ -63,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         syncButton.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    noteRepository.syncNotes()
+                    noteRepository.syncNotes(getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt("userId", 0).toLong())
                     Toast.makeText(this@MainActivity, "Notes synced!", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Toast.makeText(this@MainActivity, "Sync failed", Toast.LENGTH_SHORT).show()

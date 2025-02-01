@@ -9,9 +9,9 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.UserRepository
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -50,7 +50,7 @@ class RegisterActivity : AppCompatActivity() {
                         return@launch
                     }
 
-                    val user = User(name = name, email = email, password = password, type = "user")
+                    val user = User(name = name, email = email, password = password)
                     userRepository.insert(user)
 
                     Toast.makeText(
@@ -71,6 +71,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    //TODO: fazer o registar chamar a função createUser do userApi
     /**
      * Valida os campos de entrada.
      * Verifica se o nome, email e senha estão preenchidos corretamente.
