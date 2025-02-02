@@ -6,7 +6,7 @@ import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM notes WHERE userId = :userId ORDER BY timestamp DESC")
+    @Query("SELECT * FROM notes WHERE userId = :userId AND isDeleted = 0 ORDER BY timestamp DESC")
     fun getAllNotes(userId: Long): Flow<List<Note>>
 
     @Query("SELECT * FROM notes")

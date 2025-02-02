@@ -13,5 +13,6 @@ data class Note(
     val photoUri: String? = null,
     val photoBase64: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val synced: Boolean = false
+    val synced: Boolean = false,
+    val isDeleted: Boolean = false
 )

@@ -8,7 +8,7 @@ import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
 import pt.ipt.dam.a25269a24639.keeply.data.domain.User
 import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserDao
 
-@Database(entities = [User::class , Note::class], version = 2)
+@Database(entities = [User::class , Note::class], version = 1)
 abstract class NoteDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
     abstract fun userDao(): UserDao

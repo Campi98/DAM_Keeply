@@ -5,5 +5,6 @@ data class NoteDTO(
     val content: String,
     val userId: Int,
     val photoUri: String? = null,
-    val photoBase64: String? = null
+    val photoBase64: String? = null,
+    val isDeleted: Boolean = false
 )

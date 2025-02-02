@@ -76,21 +76,21 @@ class NoteAdapter(private var notes: List<Note>) :
                     try {
                         imageView.setImageURI(Uri.parse(note.photoUri))
                     } catch (e: Exception) {
-                        Log.e("NoteAdapter", "Error loading image URI: ${note.photoUri}", e)
-                        // carrega a imagem em base64 se falhar
-                        //loadBase64Image(imageView, note.photoBase64)
-                    }
-                } else {
-                    // eu sei que isto está repetido, dou fix depois, não vá isto dar erro
-                    //loadBase64Image(imageView, note.photoBase64)
+                    Log.e("NoteAdapter", "Error loading image URI: ${note.photoUri}", e)
+                    // Fallback to base64 if URI fails
+                    loadBase64Image(imageView, note.photoBase64)
                 }
             } else {
-                // eu sei que isto está repetido, dou fix depois, não vá isto dar erro
-                //loadBase64Image(imageView, note.photoBase64)
+                // If file doesn't exist, try base64
+                loadBase64Image(imageView, note.photoBase64)
             }
         } else {
-            imageView.visibility = View.GONE
+            // If no URI available, use base64
+            loadBase64Image(imageView, note.photoBase64)
         }
+    } else {
+        imageView.visibility = View.GONE
+    }
 
 
 

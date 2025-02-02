@@ -19,27 +19,17 @@
             app:title="Minhas Notas"
             app:titleTextColor="@android:color/white">
 
-            <!-- Botão de Logout -->
-             <ImageButton
-                android:id="@+id/logoutButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="end"
-                android:layout_marginEnd="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/logout"
-                android:src="@android:drawable/ic_lock_power_off"
-                app:tint="@android:color/white" />
+
 
             <ImageButton
-                android:id="@+id/deleteAllButton"
+                android:id="@+id/menuButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Delete all notes"
-                android:src="@android:drawable/ic_menu_delete"
+                android:contentDescription="Menu"
+                android:src="@android:drawable/ic_menu_more"
                 app:tint="@android:color/white" />
 
             <!-- Sync Button -->
@@ -48,22 +38,13 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="40dp"
+                android:layout_marginEnd="70dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Sync notes"
                 android:src="@android:drawable/ic_popup_sync"
                 app:tint="@android:color/white" />
 
-                <ImageButton
-                    android:id="@+id/deleteAccountButton"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Delete account"
-                    android:src="@android:drawable/ic_menu_delete"
-                    app:tint="#FF0000" />
+
 
                 
 

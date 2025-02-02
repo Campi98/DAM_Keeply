@@ -20,4 +20,10 @@ interface NoteApi {
 
     @DELETE("api/notes")
     suspend fun deleteAllUserNotes(@Query("userId") userId: Long)
+
+    @GET("api/notes/deleted")
+    suspend fun getDeletedNotes(@Query("userId") userId: Long): List<Long>
+
+    @POST("api/notes/deleted")
+    suspend fun markAsDeleted(@Query("noteId") noteId: Long)
 }
