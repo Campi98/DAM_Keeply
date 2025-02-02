@@ -1,13 +1,17 @@
 package pt.ipt.dam.a25269a24639.keeply.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -17,54 +21,92 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pt.ipt.dam.a25269a24639.keeply.R
 import pt.ipt.dam.a25269a24639.keeply.data.domain.Note
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteDatabase
-import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.NoteRepository
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteDatabase
+import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteRepository
 import pt.ipt.dam.a25269a24639.keeply.util.ImageUtils
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
+
+/**
+ * Activity responsável pela criação e edição de notas.
+ *
+ * Esta activity permite:
+ * - Criar novas notas
+ * - Editar notas existentes
+ * - Adicionar/remover imagens às notas (através da câmara ou galeria)
+ * - Visualizar imagens em ecrã inteiro
+ * - Eliminar notas
+ */
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
 
+    // Armazena a imagem atual em base64
     private var currentPhotoBase64: String? = null
 
-    private var currentPhotoUri: String? = null
-    private val validImageUriPattern = Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
 
-    // Obter uma imagem da galeria
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            try {
-                // criar nome para a imagem com o timestamp
-                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-                val imageFileName = "KEEPLY_${timestamp}.jpg"
-                val outputFile = File(filesDir, imageFileName)
-
-                // Copiar a imagem da galeria para o armazenamento privado da app
-                contentResolver.openInputStream(selectedUri)?.use { input ->
-                    outputFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
-                    processImage(outputFile)
-
-                    // Usar o mesmo formato de URI para todas as imagens
-                    currentPhotoUri = "file://${outputFile.absolutePath}"
-                    findViewById<ImageView>(R.id.noteImage).apply {
-                        visibility = View.VISIBLE
-                        setImageURI(Uri.parse(currentPhotoUri))
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("NoteDetailActivity", "Error processing gallery image", e)
-                Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
-            }
+    /**
+     * Launcher para gerir o resultado da visualização em ecrã inteiro
+     * Permite eliminar a imagem se o utilizador assim o desejar
+     */
+    private val fullscreenImageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // User confirmou que quer apagar a imagem
+            currentPhotoUri = null
+            currentPhotoBase64 = null
+            findViewById<ImageView>(R.id.noteImage).visibility = View.GONE
         }
     }
 
+    // Armazena o URI da imagem atual
+    private var currentPhotoUri: String? = null
 
+    // Regex para validar URIs de imagem suportadas
+    private val validImageUriPattern =
+        Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
+
+    // Obter uma imagem da galeria
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                try {
+                    // criar nome para a imagem com o timestamp
+                    val timestamp =
+                        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val imageFileName = "KEEPLY_${timestamp}.jpg"
+                    val outputFile = File(filesDir, imageFileName)
+
+                    // Copiar a imagem da galeria para o armazenamento privado da app
+                    contentResolver.openInputStream(selectedUri)?.use { input ->
+                        outputFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                        processImage(outputFile)
+
+                        // Usar o mesmo formato de URI para todas as imagens
+                        currentPhotoUri = "file://${outputFile.absolutePath}"
+                        findViewById<ImageView>(R.id.noteImage).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(currentPhotoUri))
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("NoteDetailActivity", "Error processing gallery image", e)
+                    Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+    // Obter uma imagem da câmara
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -73,7 +115,8 @@ class NoteDetailActivity : AppCompatActivity() {
             if (photoUri != null) {
                 try {
                     // converter o URI content:// para file:// para consistência
-                    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val timestamp =
+                        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                     val imageFileName = "KEEPLY_${timestamp}.jpg"
                     val outputFile = File(filesDir, imageFileName)
 
@@ -99,6 +142,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Processar a imagem e mostrar na ImageView
     private fun processImage(file: File) {
         try {
             currentPhotoUri = "file://${file.absolutePath}"
@@ -116,6 +160,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Carregar uma imagem em base64 para a ImageView
     private fun loadBase64Image(imageView: ImageView, base64String: String?) {
         if (base64String != null) {
             try {
@@ -130,6 +175,8 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Inicialização da activity
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note_detail)
@@ -144,6 +191,16 @@ class NoteDetailActivity : AppCompatActivity() {
         val titleInput = findViewById<TextInputEditText>(R.id.titleInput)
         val contentInput = findViewById<TextInputEditText>(R.id.contentInput)
 
+        findViewById<ImageView>(R.id.noteImage).setOnClickListener {
+            if (currentPhotoUri != null || currentPhotoBase64 != null) {
+                val intent = Intent(this, FullscreenImageActivity::class.java).apply {
+                    putExtra("photo_uri", currentPhotoUri)
+                    putExtra("photo_base64", currentPhotoBase64)
+                }
+                fullscreenImageLauncher.launch(intent)
+            }
+        }
+
         // Se estivermos a editar uma nota existente, obtemos os dados da nota
         noteId = intent.getLongExtra("note_id", -1)
         if (noteId != -1L) {
@@ -151,6 +208,14 @@ class NoteDetailActivity : AppCompatActivity() {
                 noteRepository.getNoteById(noteId)?.let { note ->
                     titleInput.setText(note.title)
                     contentInput.setText(note.content)
+                    val instant = Instant.ofEpochMilli(note.timestamp)
+                    val dateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                    val timestampLabel = if (note.synced) "Nota Editada: " else "Nota Criada: "
+
+                    findViewById<TextView>(R.id.noteTimestamp).apply {
+                        text = "$timestampLabel${dateTime.format(formatter)}"
+                    }
 
                     // obtém a referência para a ImageView
                     val imageView = findViewById<ImageView>(R.id.noteImage)
@@ -167,18 +232,22 @@ class NoteDetailActivity : AppCompatActivity() {
                                     imageView.setImageURI(Uri.parse(note.photoUri))
                                     currentPhotoUri = note.photoUri
                                 } catch (e: Exception) {
-                                    Log.e("NoteDetailActivity", "Error loading image URI: ${note.photoUri}", e)
-                                    // se falhar, tenta com base64
+                                    Log.e(
+                                        "NoteDetailActivity",
+                                        "Error loading image URI: ${note.photoUri}",
+                                        e
+                                    )
+                                    // Se o load falhar, tenta com base64
                                     loadBase64Image(imageView, note.photoBase64)
                                     currentPhotoBase64 = note.photoBase64
                                 }
                             } else {
-                                // se o ficheiro não existir, tenta com base64 ... outra vez?
+                                // Sem ficheiro, tenta com base64
                                 loadBase64Image(imageView, note.photoBase64)
                                 currentPhotoBase64 = note.photoBase64
                             }
                         } else {
-                            // sem Uri, tenta com base64... outra vez? xD
+                            // Sem URI, tenta com base64
                             loadBase64Image(imageView, note.photoBase64)
                             currentPhotoBase64 = note.photoBase64
                         }
@@ -194,9 +263,9 @@ class NoteDetailActivity : AppCompatActivity() {
         titleInput.setText(noteTitle)
         contentInput.setText(noteContent)
 
-        // TODO: Isto não está a ser mostrado, fix
         toolbar.title = if (noteId == -1L) "Nova Nota" else "Editar Nota"
 
+        // Guardar a nota
         findViewById<FloatingActionButton>(R.id.saveFab).setOnClickListener {
             val title = titleInput.text.toString()
             val content = contentInput.text.toString()
@@ -205,6 +274,10 @@ class NoteDetailActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val note = Note(
                         id = noteId,
+                        userId = getSharedPreferences("AppPrefs", MODE_PRIVATE).getInt(
+                            "userId",
+                            -1
+                        ),
                         title = title,
                         content = content,
                         photoUri = currentPhotoUri,
@@ -225,6 +298,7 @@ class NoteDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Eliminar a nota
         findViewById<FloatingActionButton>(R.id.deleteFab).setOnClickListener {
             if (noteId != -1L) {
                 lifecycleScope.launch {
@@ -255,6 +329,7 @@ class NoteDetailActivity : AppCompatActivity() {
                             val intent = Intent(this, CameraActivity::class.java)
                             cameraLauncher.launch(intent)
                         }
+
                         1 -> {
                             // isto lança a atividade da galeria
                             pickImage.launch("image/*")

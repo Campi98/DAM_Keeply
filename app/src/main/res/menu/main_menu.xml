@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Menu lateral do main activity -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <!-- Opção para eliminar todas as notas -->
+    <item
+        android:id="@+id/action_delete_all"
+        android:contentDescription="@string/delete_all_notes"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete_all"
+        app:showAsAction="never" />
+
+    <!-- Opção para eliminar a conta -->
+    <item
+        android:id="@+id/action_delete_account"
+        android:contentDescription="@string/delete_account"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete_account_2"
+        app:showAsAction="never" />
+
+    <!-- Opção para terminar sessão -->
+    <item
+        android:id="@+id/action_logout"
+        android:contentDescription="@string/logout_2"
+        android:icon="@android:drawable/ic_lock_power_off"
+        android:title="@string/logout_3"
+        app:showAsAction="never" />
+</menu>

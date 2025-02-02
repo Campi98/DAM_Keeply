@@ -4,5 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="purple_500">#673AB7</color> <!-- Um roxo padrão -->
     <color name="purple_700">#512DA8</color> <!-- Um tom mais escuro -->
-
+    <color name="keeply_login_color">#664FA3</color>
+    <color name="note_title_color">@android:color/black</color>
 </resources>

@@ -2,17 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Acesso à Internet para sincronização com o servidor -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
+
+    <!-- Verificação do estado da ligação à rede -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Requisitos e permissões para funcionalidade da câmara -->
     <uses-feature android:name="android.hardware.camera.any" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+
+    <!-- Permissão para armazenamento de ficheiros -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -21,7 +26,9 @@
         android:roundIcon="@mipmap/ic_launcher_try"
         android:supportsRtl="true"
         android:theme="@style/Theme.Keeply"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <!-- Activity principal de login (ponto de entrada da aplicação) -->
         <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
@@ -30,10 +37,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Activities secundárias da aplicação -->
         <activity android:name=".activity.RegisterActivity" />
         <activity android:name=".activity.MainActivity" />
         <activity android:name=".activity.NoteDetailActivity" />
         <activity android:name=".activity.CameraActivity" />
+        <activity android:name=".activity.FullscreenImageActivity" />
     </application>
 
 </manifest>

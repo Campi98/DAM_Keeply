@@ -26,9 +26,28 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-// TODO: FAZER REFERÊNCIA QUE ESTE CÓDIGO É BASEADO NO CÓDIGO DO PROFESSOR;
-// TODO: REMOVER O CÓDIGO DESNECESSÁRIO
+// Este código foi adaptado do código fornecido no Moodle, pelos docentes da disciplina
 
+
+/**
+ * Atividade responsável pela captura de fotografias utilizando a CameraX API.
+ *
+ * Esta atividade permite:
+ * - Visualização em tempo real da câmara
+ * - Captura de fotografias
+ * - Alternação entre câmara frontal e traseira
+ * - Armazenamento automático das fotografias na galeria
+ *
+ * Funcionalidades principais:
+ * - Utiliza CameraX para acesso à câmara
+ * - Implementa permissões em runtime para Android 10+
+ * - Suporta câmaras frontal e traseira
+ * - Guardar fotografias com timestamp único
+ *
+ * @see androidx.camera.core.CameraSelector
+ * @see androidx.camera.core.ImageCapture
+ * @see androidx.camera.core.Preview
+ */
 class CameraActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var imageCapture: ImageCapture
@@ -53,11 +72,11 @@ class CameraActivity : AppCompatActivity() {
         }
 
 
-        // inicializar views
+        // Inicialização das views da interface da câmara
         viewFinder = findViewById(R.id.viewFinder)
         imageCaptureButton = findViewById(R.id.image_capture_button)
 
-        // pede permissões de acesso à câmara
+        // Verifica e solicita permissões da câmara
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -75,7 +94,13 @@ class CameraActivity : AppCompatActivity() {
         activityResultLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
-    private val activityResultLauncher = 
+    /**
+     * Gestão de resultados das permissões solicitadas
+     * Regista um callback para processar as respostas das permissões
+     * Se todas as permissões forem concedidas, inicia a câmara
+     * Caso contrário, mostra uma mensagem e fecha a activity
+     */
+    private val activityResultLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             var permissionGranted = true
             permissions.entries.forEach {
@@ -123,7 +148,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
+        val imageCapture = imageCapture
 
         // Create timestamp for unique filename
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
@@ -151,7 +176,7 @@ class CameraActivity : AppCompatActivity() {
                     val msg = "Photo saved successfully: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
-                    
+
                     // Retorna o URI da foto capturada
                     val intent = Intent().apply {
                         putExtra("photo_uri", output.savedUri.toString())
@@ -159,7 +184,7 @@ class CameraActivity : AppCompatActivity() {
                     setResult(RESULT_OK, intent)
                     finish()
                 }
-        
+
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
