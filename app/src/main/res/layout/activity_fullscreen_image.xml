@@ -10,6 +10,7 @@
         android:id="@+id/fullscreenImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="@string/imagem_a_ecr_inteiro"
         android:scaleType="fitCenter" />
 
     <!-- Botão flutuante para eliminar a imagem -->
@@ -19,6 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:contentDescription="Delete image"
+        android:contentDescription="@string/delete_image_camera"
         app:srcCompat="@android:drawable/ic_menu_delete" />
 </FrameLayout>

@@ -4,82 +4,93 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomButtonsContainer"
+        android:fillViewport="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
-            android:text="Keeply"
-            android:textColor="@color/black"
-            android:textSize="48sp" />
-
-        <!-- Logótipo da aplicação -->
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="32dp"
-            android:contentDescription="App Logo"
-            android:src="@mipmap/ic_launcher_try" />
-
-        <!-- Campo de email -->
-        <com.google.android.material.textfield.TextInputLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
+            android:gravity="center"
+            android:orientation="vertical">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/emailInput"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:text="@string/keeply_login"
+                android:textColor="@color/keeply_login_color"
+                android:textSize="48sp" />
+
+            <!-- Logótipo da aplicação -->
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginBottom="32dp"
+                android:contentDescription="@string/app_logo_1"
+                android:src="@mipmap/ic_launcher_try" />
+
+            <!-- Campo de email -->
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email"
-                android:inputType="textEmailAddress" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="8dp">
 
-        <!-- Campo de palavra-passe -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/emailInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/email_1"
+                    android:inputType="textEmailAddress" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/passwordInput"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Campo de password -->
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Password"
-                android:inputType="textPassword" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="16dp">
 
-        <!-- Botão de login -->
-        <Button
-            android:id="@+id/loginButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Login" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/password_1"
+                    android:inputType="textPassword" />
 
-        <!-- Botão para ir para registo -->
-        <Button
-            android:id="@+id/registerButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Sem conta? Registe-se aqui!"
-            android:textAllCaps="false" />
-    </LinearLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Botões no fundo do ecrã -->
+            <!-- Botão de login -->
+            <Button
+                android:id="@+id/loginButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/entrar_login" />
+
+            <!-- Botão de registo -->
+            <Button
+                android:id="@+id/registerButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/registar_login"
+                android:textAllCaps="false" />
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+    <!-- Container para botões inferiores -->
     <LinearLayout
+        android:id="@+id/bottomButtonsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:paddingBottom="16dp"
         android:weightSum="2">
 
         <!-- Botão sobre os desenvolvedores -->
@@ -89,9 +100,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Sobre os desenvolvedores"
+            android:text="@string/about_devs"
             android:textAllCaps="false" />
-
         <!-- Botão para mostrar bibliotecas utilizadas -->
         <Button
             android:id="@+id/librariesButton"
@@ -99,8 +109,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Bibliotecas utilizadas"
+            android:text="@string/bibliotecas_utilizadas"
             android:textAllCaps="false" />
     </LinearLayout>
-
 </RelativeLayout>

@@ -1,11 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Keeply</string>
-    <string name="logout">Sair da conta</string>
     <string name="keeply_login">Keeply</string>
     <string name="tirar_foto_button">Tirar Foto</string>
     <string name="trocar_c_mera">Trocar câmera</string>
     <string name="delete_image_camera">Delete image</string>
-    <string name="imagem_a_ecr_inteiro">imagem a ecrã inteiro</string>
     <string name="app_logo_1">App Logo</string>
     <string name="email_1">Email</string>
     <string name="password_1">Password</string>
