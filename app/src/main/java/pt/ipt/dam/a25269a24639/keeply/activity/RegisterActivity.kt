@@ -97,28 +97,44 @@ class RegisterActivity : AppCompatActivity() {
      * Verifica se o nome, email e senha estão preenchidos corretamente.
      */
     private fun validateFields(name: String, email: String, password: String): Boolean {
-        return when {
-            name.isEmpty() -> {
-                Toast.makeText(this, "Por favor, insira seu nome.", Toast.LENGTH_SHORT).show()
-                false
-            }
-            email.isEmpty() -> {
-                Toast.makeText(this, "Por favor, insira seu email.", Toast.LENGTH_SHORT).show()
-                false
-            }
-            password.isEmpty() -> {
-                Toast.makeText(this, "Por favor, insira uma palavra passe.", Toast.LENGTH_SHORT).show()
-                false
-            }
-            password.length < 6 -> {
-                Toast.makeText(
-                    this,
-                    "A password deve ter pelo menos 6 caracteres.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                false
-            }
-            else -> true
+    val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+    
+    return when {
+        // Name validation
+        name.length < 2 || name.length > 50 -> {
+            Toast.makeText(this, "O nome deve ter entre 2 e 50 caracteres.", Toast.LENGTH_SHORT).show()
+            false
         }
+        name.any { it.isDigit() } -> {
+            Toast.makeText(this, "O nome não pode conter números.", Toast.LENGTH_SHORT).show() 
+            false
+        }
+        
+        // Email validation
+        email.isEmpty() || !email.matches(emailPattern.toRegex()) -> {
+            Toast.makeText(this, "Por favor, insira um email válido.", Toast.LENGTH_SHORT).show()
+            false  
+        }
+        
+        // Password validation  
+        password.length < 8 -> {
+            Toast.makeText(this, "A password deve ter pelo menos 8 caracteres.", Toast.LENGTH_SHORT).show()
+            false
+        }
+        !password.any { it.isDigit() } -> {
+            Toast.makeText(this, "A password deve conter pelo menos um número.", Toast.LENGTH_SHORT).show()
+            false
+        }
+        !password.any { it.isUpperCase() } -> {
+            Toast.makeText(this, "A password deve conter pelo menos uma letra maiúscula.", Toast.LENGTH_SHORT).show()
+            false
+        }
+        !password.any { it.isLowerCase() } -> {
+            Toast.makeText(this, "A password deve conter pelo menos uma letra minúscula.", Toast.LENGTH_SHORT).show()
+            false
+        }
+        
+        else -> true
     }
+}
 }

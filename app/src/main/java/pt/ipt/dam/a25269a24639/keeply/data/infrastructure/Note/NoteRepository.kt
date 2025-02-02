@@ -143,6 +143,15 @@ suspend fun syncNotes(userId: Long) {
 
 
 
+    /*
+    O seguinte código demorou mais de dois dias inteiros a ser concretizado 
+    Fica aqui imortalizado como um exemplo de como a persistência e a dedicação às vezes não levam a lado nenhum. 
+    Dois dias inteiros para tentar fazer uma lógica de sincronização de notas inquebrável - que eu pensei por várias vezes, em várias versões
+    deste código, que estava a funcionar - e que no final, nunca esteve nem perto.
+    Ironicamente, resolvi o problema em menos de 10 minutos, com um código muito mais simples e eficaz. Qual a solução de um problema tão atormentador?
+    Adicionei um atributo a uma tabela.
+    */
+    
 
 
 
@@ -153,7 +162,7 @@ suspend fun syncNotes(userId: Long) {
             // Vai buscar todas as notas do servidor
             val remoteNotes = api.getAllNotes(userId)
 
-            // Vai buscar todas as notas da base de dados local do user logado
+            // Vai buscar todas as notas da base de dados local do user logged in
             // Obter TODAS as notas, não apenas as não sincronizadas
             // Isto é porque precisamos de comparar timestamps para determinar qual versão é mais recente
             val localNotes = noteDao.getAllNotes(userId).first()
