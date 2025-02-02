@@ -122,6 +122,7 @@ class RegisterActivity : AppCompatActivity() {
                 false
             }
 
+
             name.any { it.isDigit() } -> {
                 Toast.makeText(this, "O nome não pode conter números.", Toast.LENGTH_SHORT).show()
                 false

@@ -44,6 +44,7 @@ import java.util.Locale
  * - Visualizar imagens em ecrã inteiro
  * - Eliminar notas
  */
+
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
