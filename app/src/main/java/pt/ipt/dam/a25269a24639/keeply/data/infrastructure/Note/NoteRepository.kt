@@ -108,8 +108,7 @@ class NoteRepository(private val noteDao: NoteDao) {
             val remoteDeletedIds = api.getDeletedNotes(userId)
             val localNotes = noteDao.getAllNotes(userId).first()
 
-            // TODO Comentar este melhor
-            //
+            // Marcar notas locais como eliminadas no servidor
             localNotes.filter { it.isDeleted && !it.synced }.forEach { note ->
                 try {
                     api.markAsDeleted(note.id)
