@@ -11,6 +11,15 @@ import pt.ipt.dam.a25269a24639.keeply.data.dto.NoteDTO
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * Repositório para gestão de notas.
+ *
+ * Esta classe é responsável por:
+ * - Gerir operações CRUD de notas
+ * - Sincronizar dados entre a base de dados local e o servidor
+ * - Gerir o estado de sincronização das notas
+ * - Implementar lógica de resolução de conflitos
+ */
 class NoteRepository(private val noteDao: NoteDao) {
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://keeplybackend-production.up.railway.app/")
@@ -19,12 +28,17 @@ class NoteRepository(private val noteDao: NoteDao) {
 
     private val api = retrofit.create(NoteApi::class.java)
 
+    /**
+     * Atualiza uma nota existente.
+     * @param note Nota a atualizar
+     */
     suspend fun update(note: Note) {
         try {
             // primeiro atualizar nota no servidor
-            val noteDTO = NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
+            val noteDTO =
+                NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
             api.updateNote(note.id, noteDTO)
-            //
+            // depois, atualizar localmente como sincronizada
             noteDao.updateNote(note.copy(synced = true))
         } catch (e: Exception) {
             // se falhar, atualizar localmente como não sincronizada
@@ -33,24 +47,28 @@ class NoteRepository(private val noteDao: NoteDao) {
         }
     }
 
+    /**
+     * Elimina uma nota.
+     * @param note Nota a eliminar
+     */
     suspend fun delete(note: Note) {
-    try {
-        // Mark as deleted on server
-        api.markAsDeleted(note.id)
-        // Update local note as deleted and synced
-        noteDao.updateNote(note.copy(isDeleted = true, synced = true))
-    } catch (e: Exception) {
-        // If server call fails, mark as deleted but not synced
-        noteDao.updateNote(note.copy(isDeleted = true, synced = false))
-        Log.e("NoteRepository", "Error marking note as deleted on server", e)
+        try {
+            // Marca a nota como eliminada no servidor
+            api.markAsDeleted(note.id)
+            // fazer update da nota local como eliminada e sincronizada
+            noteDao.updateNote(note.copy(isDeleted = true, synced = true))
+        } catch (e: Exception) {
+            // se falhar, marcar a nota como eliminada mas não sincronizada
+            noteDao.updateNote(note.copy(isDeleted = true, synced = false))
+            Log.e("NoteRepository", "Error marking note as deleted on server", e)
+        }
     }
-}
 
     suspend fun getNoteById(id: Long): Note? {
         return noteDao.getNoteById(id)
     }
 
-   suspend fun getAllNotes(userId: Long): Flow<List<Note>> {
+    suspend fun getAllNotes(userId: Long): Flow<List<Note>> {
         return noteDao.getAllNotes(userId)
     }
 
@@ -64,7 +82,8 @@ class NoteRepository(private val noteDao: NoteDao) {
     }
 
     suspend fun insert(note: Note) {
-        val noteDTO = NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
+        val noteDTO =
+            NoteDTO(note.title, note.content, note.userId, note.photoUri, note.photoBase64)
         try {
             // Primeiro, criar nota no servidor
             val syncedNote = api.createNote(noteDTO)
@@ -76,71 +95,80 @@ class NoteRepository(private val noteDao: NoteDao) {
             Log.e("NoteRepository", "Error creating note on server", e)
         }
     }
-    
 
 
+    /**
+     * Sincroniza notas entre o servidor e a base de dados local.
+     * @param userId ID do utilizador
+     */
+    suspend fun syncNotes(userId: Long) {
+        try {
+            // get notas do servidor e IDs de notas eliminadas
+            val remoteNotes = api.getAllNotes(userId)
+            val remoteDeletedIds = api.getDeletedNotes(userId)
+            val localNotes = noteDao.getAllNotes(userId).first()
 
-suspend fun syncNotes(userId: Long) {
-    try {
-        // Get all remote notes and deleted note IDs
-        val remoteNotes = api.getAllNotes(userId)
-        val remoteDeletedIds = api.getDeletedNotes(userId)
-        val localNotes = noteDao.getAllNotes(userId).first()
-
-        // Handle deleted notes
-        localNotes.filter { it.isDeleted && !it.synced }.forEach { note ->
-            try {
-                api.markAsDeleted(note.id)
-                noteDao.updateNote(note.copy(synced = true))
-            } catch (e: Exception) {
-                Log.e("NoteRepository", "Error syncing deleted note", e)
-            }
-        }
-
-        // Delete local notes that were deleted on server
-        remoteDeletedIds.forEach { deletedId ->
-            noteDao.getNoteById(deletedId)?.let { note ->
-                noteDao.updateNote(note.copy(isDeleted = true, synced = true))
-            }
-        }
-
-        // Sync remaining notes
-        val mergedNotes = (remoteNotes + localNotes.filter { !it.isDeleted })
-            .groupBy { it.id }
-            .map { (_, notes) -> notes.maxBy { it.timestamp } }
-
-        mergedNotes.forEach { note ->
-            try {
-                val localNote = noteDao.getNoteById(note.id)
-                val remoteNote = remoteNotes.find { it.id == note.id }
-
-                when {
-                    localNote == null && remoteNote != null -> 
-                        noteDao.insertNote(note.copy(synced = true))
-                    remoteNote == null && localNote != null && !localNote.isDeleted -> {
-                        val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
-                            localNote.photoUri, localNote.photoBase64)
-                        api.createNote(noteDTO)
-                    }
-                    localNote != null && !localNote.isDeleted && localNote.timestamp > note.timestamp -> {
-                        val noteDTO = NoteDTO(localNote.title, localNote.content, localNote.userId,
-                            localNote.photoUri, localNote.photoBase64)
-                        api.updateNote(note.id, noteDTO)
-                        noteDao.updateNote(localNote.copy(synced = true))
-                    }
-                    !note.isDeleted -> 
-                        noteDao.updateNote(note.copy(synced = true))
+            // TODO Comentar este melhor
+            //
+            localNotes.filter { it.isDeleted && !it.synced }.forEach { note ->
+                try {
+                    api.markAsDeleted(note.id)
+                    noteDao.updateNote(note.copy(synced = true))
+                } catch (e: Exception) {
+                    Log.e("NoteRepository", "Error syncing deleted note", e)
                 }
-            } catch (e: Exception) {
-                Log.e("NoteRepository", "Error syncing note", e)
             }
-        }
-        Log.d("NoteRepository", "Synced notes successfully")
-    } catch (e: Exception) {
-        Log.e("NoteRepository", "Error during sync", e)
-    }
-}
 
+            // Apagar notas locais que foram eliminadas no servidor
+            remoteDeletedIds.forEach { deletedId ->
+                noteDao.getNoteById(deletedId)?.let { note ->
+                    noteDao.updateNote(note.copy(isDeleted = true, synced = true))
+                }
+            }
+
+            // sincronizar notas restantes
+            val mergedNotes = (remoteNotes + localNotes.filter { !it.isDeleted })
+                .groupBy { it.id }
+                .map { (_, notes) -> notes.maxBy { it.timestamp } }
+
+            mergedNotes.forEach { note ->
+                try {
+                    val localNote = noteDao.getNoteById(note.id)
+                    val remoteNote = remoteNotes.find { it.id == note.id }
+
+                    when {
+                        localNote == null && remoteNote != null ->
+                            noteDao.insertNote(note.copy(synced = true))
+
+                        remoteNote == null && localNote != null && !localNote.isDeleted -> {
+                            val noteDTO = NoteDTO(
+                                localNote.title, localNote.content, localNote.userId,
+                                localNote.photoUri, localNote.photoBase64
+                            )
+                            api.createNote(noteDTO)
+                        }
+
+                        localNote != null && !localNote.isDeleted && localNote.timestamp > note.timestamp -> {
+                            val noteDTO = NoteDTO(
+                                localNote.title, localNote.content, localNote.userId,
+                                localNote.photoUri, localNote.photoBase64
+                            )
+                            api.updateNote(note.id, noteDTO)
+                            noteDao.updateNote(localNote.copy(synced = true))
+                        }
+
+                        !note.isDeleted ->
+                            noteDao.updateNote(note.copy(synced = true))
+                    }
+                } catch (e: Exception) {
+                    Log.e("NoteRepository", "Error syncing note", e)
+                }
+            }
+            Log.d("NoteRepository", "Synced notes successfully")
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error during sync", e)
+        }
+    }
 
 
     /*
@@ -151,14 +179,10 @@ suspend fun syncNotes(userId: Long) {
     Ironicamente, resolvi o problema em menos de 10 minutos, com um código muito mais simples e eficaz. Qual a solução de um problema tão atormentador?
     Adicionei um atributo a uma tabela.
     */
-    
-
 
 
     /* suspend fun syncNotes(userId: Long) {
         try {
-            //TODO: checkar se há internet, se não, não deixar dar sync - mostrar erro
-
             // Vai buscar todas as notas do servidor
             val remoteNotes = api.getAllNotes(userId)
 

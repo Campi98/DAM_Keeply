@@ -28,15 +28,29 @@ import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.Note.NoteRepository
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
+/**
+ * Activity principal da aplicação.
+ *
+ * Esta Activity é responsável por:
+ * - Exibir a lista de notas do utilizador
+ * - Gerir operações de sincronização com o servidor
+ * - Gerir operações de conta (logout, apagar conta)
+ * - Verificar conectividade de rede
+ */
 class MainActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://keeplybackend-production.up.railway.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-
     private val api = retrofit.create(UserApi::class.java)
 
+    /**
+     * Verifica se existe conexão à Internet disponível
+     * @return true se existir conexão, false caso contrário
+     */
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -85,25 +99,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, NoteDetailActivity::class.java))
         }
 
-        // Setup menu button
+        // Lógica para mostrar o menu de opções
         findViewById<ImageButton>(R.id.menuButton).setOnClickListener { view ->
             val popup = PopupMenu(this, view)
             popup.menuInflater.inflate(R.menu.main_menu, popup.menu)
-            
+
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.action_delete_all -> {
                         showDeleteAllNotesDialog()
                         true
                     }
+
                     R.id.action_delete_account -> {
                         showDeleteAccountDialog()
                         true
                     }
+
                     R.id.action_logout -> {
                         handleLogout()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -156,48 +173,50 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Função para mostrar um diálogo de confirmação antes de apagar todas as notas
     private fun showDeleteAllNotesDialog() {
-    MaterialAlertDialogBuilder(this)
-        .setTitle("Apagar TODAS as notas")
-        .setMessage("Tens a certeza que queres apagar TODAS as notas? Esta ação não pode ser revertida.")
-        .setPositiveButton("Apagar") { _, _ ->
-            lifecycleScope.launch {
-                val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                    .getInt("userId", 0).toLong()
-                if (userId != 0L) {
-                    try {
-                        // Get all notes first
-                        val notes = noteRepository.getAllNotes(userId).first()
-                        
-                        // Mark each note as deleted instead of physically deleting
-                        notes.forEach { note ->
-                            noteRepository.delete(note)
-                        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Apagar TODAS as notas")
+            .setMessage("Tens a certeza que queres apagar TODAS as notas? Esta ação não pode ser revertida.")
+            .setPositiveButton("Apagar") { _, _ ->
+                lifecycleScope.launch {
+                    val userId = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                        .getInt("userId", 0).toLong()
+                    if (userId != 0L) {
+                        try {
+                            // Primeiro, obter todas as notas
+                            val notes = noteRepository.getAllNotes(userId).first()
 
-                        // Try to sync deletions with server
-                        if (isNetworkAvailable()) {
-                            noteRepository.syncNotes(userId)
-                        }
+                            // Marcar cada nota como apagada em vez de apagar fisicamente
+                            notes.forEach { note ->
+                                noteRepository.delete(note)
+                            }
 
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Todas as notas foram apagadas",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Error deleting notes: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            // Tenta sincronizar as notas apagadas com o servidor
+                            if (isNetworkAvailable()) {
+                                noteRepository.syncNotes(userId)
+                            }
+
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Todas as notas foram apagadas",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Error deleting notes: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }
-        }
-        .setNegativeButton("Cancelar", null)
-        .show()
-}
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
 
+    // Função para mostrar um diálogo de confirmação antes de apagar a conta
     private fun showDeleteAccountDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Apagar Conta")
@@ -210,19 +229,19 @@ class MainActivity : AppCompatActivity() {
 
                         if (userId != 0) {
                             withContext(Dispatchers.IO) {
-                                // Get notes once 
+                                // Get notes uma vez
                                 val notes = noteRepository.getAllNotes(userId.toLong()).first()
 
-                                // Delete all notes
+                                // Apagar todas as notas
                                 notes.forEach { note ->
                                     noteRepository.delete(note)
                                 }
 
-                                // Delete user
+                                // Apagar o user
                                 api.deleteUser(userId)
                             }
 
-                            // Clear preferences
+                            // Limpar as SharedPreferences
                             getSharedPreferences("AppPrefs", MODE_PRIVATE)
                                 .edit()
                                 .clear()
@@ -261,6 +280,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // Função para lidar com o logout
     private fun handleLogout() {
         lifecycleScope.launch {
             // limpar dados locais independentemente da conexão
@@ -294,7 +314,6 @@ class MainActivity : AppCompatActivity() {
                     clearLocalDataAndRedirectToLogin()
                 }
             } catch (e: Exception) {
-                // Handle network errors or other exceptions
                 Toast.makeText(this@MainActivity, "Offline logout", Toast.LENGTH_SHORT).show()
                 clearLocalDataAndRedirectToLogin()
             }

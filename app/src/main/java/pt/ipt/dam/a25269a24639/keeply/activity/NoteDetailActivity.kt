@@ -33,12 +33,29 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
+
+/**
+ * Activity responsável pela criação e edição de notas.
+ *
+ * Esta activity permite:
+ * - Criar novas notas
+ * - Editar notas existentes
+ * - Adicionar/remover imagens às notas (através da câmara ou galeria)
+ * - Visualizar imagens em ecrã inteiro
+ * - Eliminar notas
+ */
 class NoteDetailActivity : AppCompatActivity() {
     private lateinit var noteRepository: NoteRepository
     private var noteId: Long = -1
 
+    // Armazena a imagem atual em base64
     private var currentPhotoBase64: String? = null
 
+
+    /**
+     * Launcher para gerir o resultado da visualização em ecrã inteiro
+     * Permite eliminar a imagem se o utilizador assim o desejar
+     */
     private val fullscreenImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -50,7 +67,10 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Armazena o URI da imagem atual
     private var currentPhotoUri: String? = null
+
+    // Regex para validar URIs de imagem suportadas
     private val validImageUriPattern =
         Regex("^file://.+\\.(jpg|jpeg|png|gif|bmp)$", RegexOption.IGNORE_CASE)
 
@@ -86,7 +106,7 @@ class NoteDetailActivity : AppCompatActivity() {
             }
         }
 
-
+    // Obter uma imagem da câmara
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -122,6 +142,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Processar a imagem e mostrar na ImageView
     private fun processImage(file: File) {
         try {
             currentPhotoUri = "file://${file.absolutePath}"
@@ -139,6 +160,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Carregar uma imagem em base64 para a ImageView
     private fun loadBase64Image(imageView: ImageView, base64String: String?) {
         if (base64String != null) {
             try {
@@ -153,6 +175,7 @@ class NoteDetailActivity : AppCompatActivity() {
         }
     }
 
+    // Inicialização da activity
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -214,17 +237,17 @@ class NoteDetailActivity : AppCompatActivity() {
                                         "Error loading image URI: ${note.photoUri}",
                                         e
                                     )
-                                    // se falhar, tenta com base64
+                                    // Se o load falhar, tenta com base64
                                     loadBase64Image(imageView, note.photoBase64)
                                     currentPhotoBase64 = note.photoBase64
                                 }
                             } else {
-                                // se o ficheiro não existir, tenta com base64 ... outra vez?
+                                // Sem ficheiro, tenta com base64
                                 loadBase64Image(imageView, note.photoBase64)
                                 currentPhotoBase64 = note.photoBase64
                             }
                         } else {
-                            // sem Uri, tenta com base64... outra vez? xD
+                            // Sem URI, tenta com base64
                             loadBase64Image(imageView, note.photoBase64)
                             currentPhotoBase64 = note.photoBase64
                         }
@@ -240,9 +263,9 @@ class NoteDetailActivity : AppCompatActivity() {
         titleInput.setText(noteTitle)
         contentInput.setText(noteContent)
 
-        // TODO: Isto não está a ser mostrado, fix
         toolbar.title = if (noteId == -1L) "Nova Nota" else "Editar Nota"
 
+        // Guardar a nota
         findViewById<FloatingActionButton>(R.id.saveFab).setOnClickListener {
             val title = titleInput.text.toString()
             val content = contentInput.text.toString()
@@ -275,6 +298,7 @@ class NoteDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Eliminar a nota
         findViewById<FloatingActionButton>(R.id.deleteFab).setOnClickListener {
             if (noteId != -1L) {
                 lifecycleScope.launch {

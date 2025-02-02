@@ -19,19 +19,33 @@ import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
+/**
+ * Activity responsável pela autenticação do utilizador.
+ *
+ * Esta Activity gere:
+ * - Login do utilizador
+ * - Registo de novos utilizadores
+ * - Apresentação de diálogos informativos
+ * - Gestão do estado de autenticação
+ */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var userRepository: UserRepository
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var passwordInput: TextInputEditText
+
+    // Configuração do Retrofit para comunicação com a API
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://keeplybackend-production.up.railway.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     private val api = retrofit.create(UserApi::class.java)
 
-    private lateinit var emailInput: TextInputEditText
-    private lateinit var passwordInput: TextInputEditText
 
+    /**
+     * Launcher para gerir o resultado do registo de utilizador
+     * Preenche automaticamente os campos de email e password após registo bem-sucedido
+     */
     private val registerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -49,8 +63,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        //TODO: Fazer página de Boas Vindas
-        //TODO: Dar extract string resources em todos os xml's
 
         // Checka se é a primeira vez que o utilizador abre a aplicação
         val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
@@ -69,21 +81,11 @@ class LoginActivity : AppCompatActivity() {
             true
         }
 
-//        // PARA DEBUG: botão para testar a MainActivity
-//        findViewById<Button>(R.id.testButton).setOnClickListener {
-//            startActivity(Intent(this, MainActivity::class.java))
-//        }
-//
-//        findViewById<Button>(R.id.cameraButton).setOnClickListener {
-//            startActivity(Intent(this, CameraActivity::class.java))
-//        }
-
-        /* val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
-        val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput) */
         emailInput = findViewById(R.id.emailInput)
         passwordInput = findViewById(R.id.passwordInput)
         val loginButton = findViewById<Button>(R.id.loginButton)
         val registerButton = findViewById<Button>(R.id.registerButton)
+        val aboutButton = findViewById<Button>(R.id.aboutButton)
 
         // Inicializa o banco de dados e repositório
         val database = NoteDatabase.getDatabase(this)
@@ -105,19 +107,22 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        aboutButton.setOnClickListener {
+            showAboutDialog()
+        }
+
         findViewById<Button>(R.id.registerButton).setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             registerLauncher.launch(intent)
         }
 
-        val aboutButton = findViewById<Button>(R.id.aboutButton)
-        aboutButton.setOnClickListener {
-            showAboutDialog()
-        }
+
+        // Diálogo com informações sobre as bibliotecas utilizadas
         findViewById<Button>(R.id.librariesButton).setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle("Bibliotecas Utilizadas")
-                .setMessage("""
+                .setMessage(
+                    """
                 Core Libraries:
                 • AndroidX Core
                 • AndroidX AppCompat 
@@ -137,12 +142,16 @@ class LoginActivity : AppCompatActivity() {
 
                 Networking:
                 • Retrofit 2 (v2.9.0)
-            """.trimIndent())
+            """.trimIndent()
+                )
                 .setPositiveButton("OK", null)
                 .show()
         }
     }
 
+    /**
+     * Mostra um diálogo com informações sobre a aplicação.
+     */
     private fun showAboutDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Sobre o Keeply")
@@ -151,6 +160,11 @@ class LoginActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Mostra um diálogo de consentimento ao utilizador.
+     * - O utilizador pode aceitar ou recusar a política de privacidade.
+     * - Se recusar, a aplicação é fechada.
+     */
     private fun showConsentDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Política de Privacidade")
@@ -173,6 +187,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Dá reset ao estado do first launch para debug (para mostrar a privacy policy outra vez).
+     */
     private fun resetFirstLaunch() {
         getSharedPreferences("AppPrefs", MODE_PRIVATE)
             .edit()
@@ -194,10 +211,12 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Por favor, insira o email.", Toast.LENGTH_SHORT).show()
                 false
             }
+
             password.isEmpty() -> {
                 Toast.makeText(this, "Por favor, insira a senha.", Toast.LENGTH_SHORT).show()
                 false
             }
+
             else -> true
         }
     }
@@ -216,10 +235,12 @@ class LoginActivity : AppCompatActivity() {
             if (response.isSuccessful) {
                 val user = response.body()!!
                 saveLoginState(user.loggedIn, email, user.userId)
-                Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.name}!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "Bem-vindo, ${user.name}!", Toast.LENGTH_SHORT)
+                    .show()
                 goToMainActivity()
             } else {
-                Toast.makeText(this@LoginActivity, "Email ou senha inválidos!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "Email ou senha inválidos!", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -236,8 +257,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     /**
-    * Redireciona o usuário para a MainActivity.
-    */
+     * Redireciona o usuário para a MainActivity.
+     */
     private fun goToMainActivity() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()

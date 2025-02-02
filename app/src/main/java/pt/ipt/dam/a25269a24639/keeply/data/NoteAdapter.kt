@@ -22,9 +22,26 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/**
+ * Adaptador para exibir notas numa RecyclerView.
+ *
+ * Esta classe é responsável por:
+ * - Gerir a exibição de notas numa lista
+ * - Carregar e exibir imagens associadas às notas
+ * - Gerir interações com as notas (cliques)
+ *
+ * @property notes Lista de notas a exibir
+ */
 class NoteAdapter(private var notes: List<Note>) :
     RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
+    /**
+     * ViewHolder para cada item da lista de notas.
+     *
+     * @property titleView TextView para o título da nota
+     * @property contentView TextView para o conteúdo da nota
+     * @property cardView CardView que contém a nota completa
+     */
     class NoteViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val titleView: TextView = view.findViewById(R.id.noteTitle)
         val contentView: TextView = view.findViewById(R.id.noteContent)
@@ -32,7 +49,12 @@ class NoteAdapter(private var notes: List<Note>) :
     }
 
 
-    // função para carregar a imagem em base64
+    /**
+     * Carrega uma imagem codificada em base64 num ImageView.
+     *
+     * @param imageView View onde a imagem será exibida
+     * @param base64String String da imagem em formato base64
+     */
     private fun loadBase64Image(imageView: ImageView, base64String: String?) {
         if (base64String != null) {
             try {
@@ -47,9 +69,14 @@ class NoteAdapter(private var notes: List<Note>) :
         }
     }
 
+    /**
+     * Atualiza a lista de notas e notifica o adaptador.
+     *
+     * @param newNotes Nova lista de notas a exibir
+     */
     fun updateNotes(newNotes: List<Note>) {
         notes = newNotes
-        notifyDataSetChanged()      // TODO: Ver se é necessário
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -76,24 +103,24 @@ class NoteAdapter(private var notes: List<Note>) :
                     try {
                         imageView.setImageURI(Uri.parse(note.photoUri))
                     } catch (e: Exception) {
-                    Log.e("NoteAdapter", "Error loading image URI: ${note.photoUri}", e)
-                    // Fallback to base64 if URI fails
+                        Log.e("NoteAdapter", "Error loading image URI: ${note.photoUri}", e)
+                        // Se falhar, tentar base64
+                        loadBase64Image(imageView, note.photoBase64)
+                    }
+                } else {
+                    // se o ficheiro não existir, tentar base64
                     loadBase64Image(imageView, note.photoBase64)
                 }
             } else {
-                // If file doesn't exist, try base64
+                // Se não houver URI, tentar base64
                 loadBase64Image(imageView, note.photoBase64)
             }
         } else {
-            // If no URI available, use base64
-            loadBase64Image(imageView, note.photoBase64)
+            imageView.visibility = View.GONE
         }
-    } else {
-        imageView.visibility = View.GONE
-    }
 
 
-
+        // configura o clique numa nota para abrir a atividade de detalhes
         holder.cardView.setOnClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, NoteDetailActivity::class.java).apply {

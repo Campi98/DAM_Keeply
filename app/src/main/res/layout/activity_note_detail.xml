@@ -1,14 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!-- Layout principal para o ecrã de detalhe/edição de notas -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Barra superior da aplicação -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- Barra de ferramentas com botão de voltar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -18,6 +20,7 @@
             app:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Campo para título da nota com contador de caracteres -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,6 +36,7 @@
             android:maxLength="50" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo para conteúdo da nota com contador de caracteres -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,14 +52,15 @@
             android:hint="Conteúdo"
             android:inputType="textMultiLine|textMultiLine"
             android:lines="8"
-            android:minLines="6"
+            android:maxLength="254"
             android:maxLines="10"
-            android:scrollbars="vertical"
-            android:maxLength="254" />
+            android:minLines="6"
+            android:scrollbars="vertical" />
 
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Área para exibição de imagem anexada -->
     <ImageView
         android:id="@+id/noteImage"
         android:layout_width="match_parent"
@@ -69,15 +74,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:textSize="12sp"
+        android:gravity="end"
         android:textColor="@android:color/darker_gray"
-        android:gravity="end"/>
+        android:textSize="12sp" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom">
 
+        <!-- Botão para eliminar nota -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/deleteFab"
             android:layout_width="wrap_content"
@@ -87,6 +93,7 @@
             android:contentDescription="Apagar nota"
             app:srcCompat="@android:drawable/ic_menu_delete" />
 
+        <!-- Botão para guardar nota -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/saveFab"
             android:layout_width="wrap_content"
@@ -96,6 +103,7 @@
             android:contentDescription="Salvar nota"
             app:srcCompat="@android:drawable/ic_menu_save" />
 
+        <!-- Botão para adicionar foto -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/cameraFab"
             android:layout_width="wrap_content"

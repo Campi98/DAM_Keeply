@@ -1,16 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- Layout principal da aplicação -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
+    <!-- Barra de aplicação com suporte a scroll -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true">
 
+        <!-- Barra de ferramentas personalizada -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -20,7 +21,7 @@
             app:titleTextColor="@android:color/white">
 
 
-
+            <!-- Botão de menu com três pontos -->
             <ImageButton
                 android:id="@+id/menuButton"
                 android:layout_width="48dp"
@@ -32,7 +33,7 @@
                 android:src="@android:drawable/ic_menu_more"
                 app:tint="@android:color/white" />
 
-            <!-- Sync Button -->
+            <!-- Botão de sincronização -->
             <ImageButton
                 android:id="@+id/syncButton"
                 android:layout_width="48dp"
@@ -45,13 +46,11 @@
                 app:tint="@android:color/white" />
 
 
-
-                
-
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Lista de notas -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/notesRecyclerView"
         android:layout_width="match_parent"
@@ -60,6 +59,7 @@
         android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <!-- Botão flutuante para adicionar novas notas -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addNoteFab"
         android:layout_width="wrap_content"
@@ -67,8 +67,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="Adicionar nota"
-        app:srcCompat="@android:drawable/ic_input_add"/>
-
+        app:srcCompat="@android:drawable/ic_input_add" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

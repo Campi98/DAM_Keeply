@@ -16,9 +16,26 @@ import pt.ipt.dam.a25269a24639.keeply.data.infrastructure.User.UserRepository
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
+/**
+ * Activity responsável pelo registo de novos utilizadores.
+ *
+ * Esta activity permite:
+ * - Criar novas contas de utilizador
+ * - Validar os dados introduzidos
+ * - Comunicar com o servidor através da API
+ * - Retornar as credenciais à LoginActivity após registo bem-sucedido
+ *
+ * Funcionalidades principais:
+ * - Validação em tempo real dos campos de registo
+ * - Integração com API REST para criação de conta
+ * - Gestão de erros e feedback ao utilizador
+ */
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var userRepository: UserRepository
+
+    // Configuração do cliente Retrofit para comunicação com a API
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://keeplybackend-production.up.railway.app/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -36,11 +53,10 @@ class RegisterActivity : AppCompatActivity() {
         val registerButton = findViewById<Button>(R.id.registerButton)
 
 
-        // Inicializa o banco de dados e repositório
         val database = NoteDatabase.getDatabase(this)
         userRepository = UserRepository(database.userDao())
 
-        // Botão de registrar
+        // Botão de registar
         registerButton.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val email = emailInput.text.toString().trim()
@@ -84,57 +100,78 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         // Botão de cancelar
-        val cancelBtn= findViewById<Button>(R.id.cancelButton)
+        val cancelBtn = findViewById<Button>(R.id.cancelButton)
         cancelBtn.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
     }
 
-    //TODO: fazer o registar chamar a função createUser do userApi
     /**
      * Valida os campos de entrada.
      * Verifica se o nome, email e senha estão preenchidos corretamente.
      */
     private fun validateFields(name: String, email: String, password: String): Boolean {
-    val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
-    
-    return when {
-        // Name validation
-        name.length < 2 || name.length > 50 -> {
-            Toast.makeText(this, "O nome deve ter entre 2 e 50 caracteres.", Toast.LENGTH_SHORT).show()
-            false
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+
+        return when {
+            // validação do nome
+            name.length < 2 || name.length > 50 -> {
+                Toast.makeText(this, "O nome deve ter entre 2 e 50 caracteres.", Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+
+            name.any { it.isDigit() } -> {
+                Toast.makeText(this, "O nome não pode conter números.", Toast.LENGTH_SHORT).show()
+                false
+            }
+
+            // validação do email
+            email.isEmpty() || !email.matches(emailPattern.toRegex()) -> {
+                Toast.makeText(this, "Por favor, insira um email válido.", Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+
+            // validação da password
+            password.length < 8 -> {
+                Toast.makeText(
+                    this,
+                    "A password deve ter pelo menos 8 caracteres.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+
+            !password.any { it.isDigit() } -> {
+                Toast.makeText(
+                    this,
+                    "A password deve conter pelo menos um número.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+
+            !password.any { it.isUpperCase() } -> {
+                Toast.makeText(
+                    this,
+                    "A password deve conter pelo menos uma letra maiúscula.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+
+            !password.any { it.isLowerCase() } -> {
+                Toast.makeText(
+                    this,
+                    "A password deve conter pelo menos uma letra minúscula.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+
+            else -> true
         }
-        name.any { it.isDigit() } -> {
-            Toast.makeText(this, "O nome não pode conter números.", Toast.LENGTH_SHORT).show() 
-            false
-        }
-        
-        // Email validation
-        email.isEmpty() || !email.matches(emailPattern.toRegex()) -> {
-            Toast.makeText(this, "Por favor, insira um email válido.", Toast.LENGTH_SHORT).show()
-            false  
-        }
-        
-        // Password validation  
-        password.length < 8 -> {
-            Toast.makeText(this, "A password deve ter pelo menos 8 caracteres.", Toast.LENGTH_SHORT).show()
-            false
-        }
-        !password.any { it.isDigit() } -> {
-            Toast.makeText(this, "A password deve conter pelo menos um número.", Toast.LENGTH_SHORT).show()
-            false
-        }
-        !password.any { it.isUpperCase() } -> {
-            Toast.makeText(this, "A password deve conter pelo menos uma letra maiúscula.", Toast.LENGTH_SHORT).show()
-            false
-        }
-        !password.any { it.isLowerCase() } -> {
-            Toast.makeText(this, "A password deve conter pelo menos uma letra minúscula.", Toast.LENGTH_SHORT).show()
-            false
-        }
-        
-        else -> true
     }
-}
 }
